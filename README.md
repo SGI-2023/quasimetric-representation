@@ -75,7 +75,7 @@ To reproduce the online `gcrl`  experiments in paper, you can use commands simil
 
 **[SGI]**  To run on your custom environment use:
 ```sh
-./offline/run_maze2d.sh env.name='custom-grid-umaze-v1' agent.actor=null
+./offline/run_sfi.sh env.name='custom-grid-umaze-v1' agent.actor=null
 ```
 
 <details>
