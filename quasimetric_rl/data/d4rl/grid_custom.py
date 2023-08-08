@@ -1,8 +1,8 @@
 from __future__ import annotations
 from typing import *
 
-import matplotlib.pyplot as plt
 import numpy as np
+import os
 import torch
 import torch.utils.data
 from gym import Env, spaces
@@ -72,8 +72,6 @@ class Maze_simple(Env):
         self.position = self.position.clip(min=0, max=self.size)
 
         distance_to_goal = np.linalg.norm(self.position-self.goal)
-        print(distance_to_goal)
-        print()
         reward = -distance_to_goal
 
         done = False
@@ -85,7 +83,10 @@ class Maze_simple(Env):
 def create_maze_simple_env():
     return Maze_simple()
 
-def generator_load_episodes_custom_dataset(folder_name='/home/danperazzo/Desktop/SGI_projects/quasimetric-representation/offline/trajectories', size = 500):
+def generator_load_episodes_custom_dataset(folder_name='trajectories'):
+    _, _, files = next(os.walk(folder_name))
+    size = len(files)
+    
     folder_trajectories_name = Path(folder_name)
 
     for idx in range(size):
