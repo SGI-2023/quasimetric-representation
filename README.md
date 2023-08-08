@@ -72,6 +72,12 @@ To reproduce the online `gcrl`  experiments in paper, you can use commands simil
 ./online/run_gcrl.sh env.name='FetchSlide' seed=44411223 interaction.total_env_steps=10 agent.num_critics=3
 ```
 
+To run on your custom environment use:
+```sh
+# run state-input FetchReach
+./offline/run_maze2d.sh env.name='custom-grid-umaze-v1' agent.actor=null
+```
+
 **NOTES**:
 1. **We recommend monitoring experiments with tensorboard.**
 
