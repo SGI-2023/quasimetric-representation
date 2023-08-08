@@ -68,8 +68,6 @@ class Maze_simple(Env):
         self.position = self.position.clip(min=0, max=self.size)
 
         distance_to_goal = np.linalg.norm(self.position-self.goal)
-        print(distance_to_goal)
-        print()
         reward = -distance_to_goal
 
         done = False
@@ -90,34 +88,44 @@ fig, ax = plt.subplots(1, 1)
 fig.set_size_inches(5,5)
 
 print(check_env(maze_env))
+
+'''
+for i in range(1000):
+    dict = np.load(f'trajectories/test_{i:04}.npz')
+    print(list(dict.keys()))
+
 exit(0)
- 
-model = A2C("MlpPolicy", maze_env, verbose=1)
-model.learn(total_timesteps=1000000)
+'''
 
-vec_env = model.get_env()
-point = vec_env.reset()
+for i in range(500):
+    observation_list = []
+    next_obervation_list = []
+    reward_list = []
+    terminal_list = []
+    actions_list = []
+    for j in range(1000):
+        dict_data = {}
+        random_action = random.randrange(4)
+        observation = maze_env.position
+        next_observation, reward, terminal, _ = maze_env.step(random_action)
 
-def animate(i):
-    ax.clear()
-    # Get the point from the points list at index i
-    action, _states = model.predict(point)
-    point, rewards, dones, info = maze_env.step(action)
+        observation_list.append(observation)
+        next_obervation_list.append(next_observation)
+        reward_list.append(reward)
+        terminal_list.append(terminal)
+        actions_list.append(random_action)
 
-    # Plot that point using the x and y coordinates
-    ax.plot(point[0], point[1], color='green', 
-            label='original', marker='o')
-    
-    goal_point = maze_env.goal
-    ax.plot(goal_point[0], goal_point[1], color='red', 
-            label='original', marker='o')
+    dict_data['observations']=np.array(observation_list)
+    dict_data['next_observations'] = np.array(next_obervation_list)
+    dict_data['rewards'] = np.array(reward_list)
+    dict_data['terminals'] = np.array(terminal_list)
+    dict_data['all_observations'] = np.concatenate(
+                [dict_data['observations'], dict_data['next_observations'][-1:]], axis=0)
+    dict_data['actions'] = np.array(actions_list,dtype=np.int64)
 
 
+    np.savez(f'trajectories/test_{i:04}', **dict_data)
+    print(i)
 
-ani = FuncAnimation(fig, animate, frames=500,
-                    interval=500, repeat=False)
 
-ani.save("simple_animation.gif", dpi=300,
-         writer=PillowWriter(fps=1))
-plt.close()
-
+print(check_env(maze_env))
