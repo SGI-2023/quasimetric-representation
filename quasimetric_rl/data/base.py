@@ -122,7 +122,7 @@ class EpisodeData(MultiEpisodeData):
         next_observations=torch.tensor(next_observations)
         all_observations = torch.cat([observations, next_observations[-1:]], dim=0)
         return cls(
-            episode_length=torch.tensor([observations.shape[0]]),
+            episode_lengths=torch.tensor([observations.shape[0]]),
             all_observations=all_observations,
             actions=torch.tensor(actions),
             rewards=torch.tensor(rewards),

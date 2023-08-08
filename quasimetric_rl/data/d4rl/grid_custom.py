@@ -1,25 +1,15 @@
 from __future__ import annotations
 from typing import *
 
-import logging
-import functools
-
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.utils.data
 from gym import Env, spaces
-from torch.utils.data import Dataset
-
-import d4rl.pointmaze
 
 from ..base import register_offline_env, EpisodeData
-from . import load_environment, convert_dict_to_EpisodeData_iter, sequence_dataset
 import random
-import os
 from pathlib import Path
-import collections
-
 
 random.seed(0)
 np.random.seed(0)
@@ -91,89 +81,37 @@ class Maze_simple(Env):
             done = True
 
         return self.position, reward, done, {}
-    
-
-class TrajectoriesDataset(Dataset):
-    def __init__(self, trajectories_folder ='/home/danperazzo/Desktop/SGI_projects/quasimetric-rl/offline/trajectories/' ):
-
-        self.trajectories_folder = Path(trajectories_folder)
-        self.size = 2
-
-    def __len__(self):
-        return 2
-
-    def __getitem__(self, idx):
-        if idx > self.size:
-            return StopIteration
-        
-        img_name = Path(f'test_{idx:04}.npz')
-
-        path_to_pick_image = self.trajectories_folder / img_name
-
-
-        dict = np.load(path_to_pick_image)
-        
-        return dict
-    
-class Trajectories_Iterator(collections.Iterator):
-    def __init__(self, trajectories_folder ='/home/danperazzo/Desktop/SGI_projects/quasimetric-rl/offline/trajectories/' ):
-        self.trajectories_folder = Path(trajectories_folder)
-        self.size = 400
-        self.counter = 0
-
-    def __next__(self):
-        if self.counter > self.size:
-            raise StopIteration
-        
-        img_name = Path(f'test_{self.counter:04}.npz')
-        path_to_pick_image = self.trajectories_folder / img_name
-
-        dict = np.load(path_to_pick_image)
-        
-        self.counter = self.counter + 1
-        
-        return dict 
 
 def create_maze_simple_env():
     return Maze_simple()
 
+def generator_load_episodes_custom_dataset(folder_name='/home/danperazzo/Desktop/SGI_projects/quasimetric-representation/offline/trajectories', size = 500):
+    folder_trajectories_name = Path(folder_name)
 
-def convert_dict_to_EpisodeData_iter_discrete(sequence_dataset_episodes: Iterator[Mapping[str, np.ndarray]]):
-    for episode in sequence_dataset_episodes:
+    for idx in range(size):
+        test_name = Path(f'test_{idx:04}.npz')
+        path_to_pick_episode = folder_trajectories_name / test_name
+
+        dict_episode = np.load(path_to_pick_episode)
+
         episode_dict = dict(
-            episode_lengths=torch.as_tensor([len(episode['all_observations']) - 1], dtype=torch.int64),
-            all_observations=torch.as_tensor(episode['all_observations'], dtype=torch.float32),
-            actions=torch.as_tensor(episode['actions'], dtype=torch.int64),
-            rewards=torch.as_tensor(episode['rewards'], dtype=torch.float32),
-            terminals=torch.as_tensor(episode['terminals'], dtype=torch.bool),
+            episode_lengths=torch.as_tensor([len(dict_episode['all_observations']) - 1], dtype=torch.int64),
+            all_observations=torch.as_tensor(dict_episode['all_observations'], dtype=torch.float32),
+            actions=torch.as_tensor(dict_episode['actions'], dtype=torch.int64),
+            rewards=torch.as_tensor(dict_episode['rewards'], dtype=torch.float32),
+            terminals=torch.as_tensor(dict_episode['terminals'], dtype=torch.bool),
             timeouts=(
-                torch.as_tensor(episode['timeouts'], dtype=torch.bool) if 'timeouts' in episode else
-                torch.zeros(episode['terminals'].shape, dtype=torch.bool)
-            ),
-            observation_infos={},
-            transition_infos={},
+                torch.as_tensor(dict_episode['timeouts'], dtype=torch.bool) if 'timeouts' in dict_episode else
+                torch.zeros(dict_episode['terminals'].shape, dtype=torch.bool)
+            )
         )
-        for k, v in episode.items():
-            if k.startswith('observation_infos/'):
-                episode_dict['observation_infos'][k.split('/', 1)[1]] = v
-            elif k.startswith('transition_infos/'):
-                episode_dict['transition_infos'][k.split('/', 1)[1]] = v
-        yield EpisodeData(**episode_dict)
 
-
-def load_episodes_simple_dataset():
-    iterator_dataset_maze = Trajectories_Iterator()
-    iterator_dataset_maze = iter(iterator_dataset_maze)
-    yield from convert_dict_to_EpisodeData_iter_discrete(
-        iterator_dataset_maze
-    )
-
+        episode_data = EpisodeData(**episode_dict)
+        yield episode_data
 
 for name in ['custom-grid-umaze-v1']:
     register_offline_env(
         'd4rl', name,
         create_env_fn=create_maze_simple_env,
-        load_episodes_fn=load_episodes_simple_dataset,
+        load_episodes_fn=generator_load_episodes_custom_dataset,
     )
-
-
