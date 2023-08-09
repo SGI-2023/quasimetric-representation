@@ -75,7 +75,12 @@ To reproduce the online `gcrl`  experiments in paper, you can use commands simil
 
 **[SGI]**  To run on your custom environment use:
 ```sh
-./offline/run_sgi.sh env.name='custom-grid-umaze-v1' agent.actor=null
+./offline/run_sgi.sh env.name='custom-grid-tank-goal-v1' agent.actor=null total_optim_steps=10000 agent.num_critics=1
+```
+
+Before that, run an offline trajectory with:
+```sh
+python save_trajectory.py
 ```
 
 <details>

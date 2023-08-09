@@ -11,39 +11,47 @@ from ..base import register_offline_env, EpisodeData
 from pathlib import Path
 
 class Tank_reach_goal(Env):
-
-    def get_position_coordinates(self, position):
-        x = int(self.observation_boundary[0] * position[0])
-        y = int(self.observation_boundary[1] * position[1])
-
-        return np.array([x,y], dtype=np.int32)
     
-    def __init__(self, goal = (0.5, 0.5), init_position= (0.3,0.3), size = 60, steering_direction_subdivision = np.pi/12, velocity = 0.05):
+    def get_observation(self):
+        observation = np.concatenate([self.position, self.steering_direction])
+        return observation
+    
+    def distance_function(self, pos, goal):
+        return np.linalg.norm(pos-goal)
+        
+    def initialize_init_pos_and_goal(self):
+        self.position = np.random.uniform(0.01,2*np.pi*0.09,2)
+        self.steering_direction = np.random.uniform(0,2*np.pi,1)
+
+        candidate_goal = np.random.uniform(0.01,2*np.pi*0.09,2)
+        while self.distance_function(self.position, candidate_goal)< self.epsolon_distance_goal:
+            candidate_goal = np.random.uniform(0.01,2*np.pi*0.09,2)
+        self.goal = candidate_goal
+    
+    def __init__(self, angle_velocity = np.pi/8, velocity = 0.05):
         super(Tank_reach_goal, self).__init__()
         
-        self.size = size
-        self.steering_direction_subdivision = steering_direction_subdivision
-        self.velocity_step = velocity*size
+        self.size = 2*np.pi
+        self.angle_velocity = angle_velocity
+        self.velocity_radius = velocity
+        self.velocity_step = velocity*self.size 
+        self.epsolon_distance_goal = self.size*self.velocity_radius*0.25
 
         self.observation_boundary = (self.size, self.size)
-        self.observation_space = spaces.Box(low = np.zeros(2), 
-                                            high = np.ones(2)*self.size,
-                                            dtype = np.int32)
+        self.observation_space = spaces.Box(low = np.zeros(3), 
+                                            high = np.ones(3)*self.size,
+                                            dtype = np.float64)
             
+        self.initialize_init_pos_and_goal()
+
         self.action_space = spaces.Discrete(3,)
-
-        self.position = self.get_position_coordinates(init_position)
-        self.goal = self.get_position_coordinates(goal)
-
         self.action_ditct = {'front':0, 'left':1, 'right':2}
 
-        self.steering_direction = np.zeros(1)
+    def reset(self):
+        self.initialize_init_pos_and_goal()
+        observation = self.get_observation()
 
-    def reset(self,init_position= (0.1,0.2)):
-        self.position = self.get_position_coordinates(init_position)
-        self.steering_direction = np.zeros(1)
-
-        return self.position
+        return observation
     
     def go_front(self):
         y_to_go = np.sin(self.steering_direction)
@@ -51,7 +59,6 @@ class Tank_reach_goal(Env):
 
         translation_direction = np.concatenate([x_to_go, y_to_go])
         translation_to_go = translation_direction*self.velocity_step
-        translation_to_go = translation_to_go.astype(int)
 
         self.position = translation_to_go + self.position
 
@@ -63,23 +70,31 @@ class Tank_reach_goal(Env):
             self.go_front()
 
         elif action == self.action_ditct['left']:
-            self.steering_direction -= self.steering_direction_subdivision
+
+            self.steering_direction -= self.angle_velocity
+            if self.steering_direction < 0:
+                self.steering_direction = np.zeros(1)
 
         elif action == self.action_ditct['right']:
-            self.steering_direction += self.steering_direction_subdivision
+
+            self.steering_direction += self.angle_velocity
+            if self.steering_direction > self.size:
+                self.steering_direction = np.ones(1)*self.size
     
     def step(self,action):
 
         self.action_to_take(action)
 
-        distance_to_goal = np.linalg.norm(self.position-self.goal)
+        distance_to_goal = self.distance_function(self.position, self.goal)
         reward = -1
 
         done = False
-        if distance_to_goal <= 3:
+        if distance_to_goal <= self.epsolon_distance_goal:
             done = True
 
-        return self.position, reward, done, {}
+        observation = self.get_observation()
+
+        return observation, reward, done, {}
 
 def create__tank_reach_goal_env():
     return Tank_reach_goal()
