@@ -20,6 +20,7 @@ if not os.path.exists(name):
 
 
 for i in range(2000):
+    env.reset()
     observation_list = []
     next_obervation_list = []
     reward_list = []

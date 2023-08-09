@@ -13,7 +13,7 @@ from matplotlib.animation import PillowWriter
 fig, ax = plt.subplots(1, 1)
 fig.set_size_inches(5,5)
 
-expr_checkpoint = 'offline/results_old/d4rl_custom-grid-umaze-v1/iqe(dim=2048,components=64)_dyn=1_seed=60912/checkpoint_00082_00000_final.pth'  # FIXME
+expr_checkpoint = 'offline/results/d4rl_custom-grid-tank-goal-v1/iqe(dim=2048,components=64)_dyn=1_seed=60912/checkpoint_00023_00000_final.pth'  # FIXME
 
 expr_dir = os.path.dirname(expr_checkpoint)
 with open(expr_dir + '/config.yaml', 'r') as f:
@@ -37,3 +37,22 @@ agent: QRLAgent = agent_conf.make(env_spec=dataset.env_spec, total_optim_steps=1
 
 # 3. Load checkpoint
 agent.load_state_dict(torch.load(expr_checkpoint, map_location='cpu')['agent'])
+
+critic= agent.critics[0]
+
+# greedy 1-step planning
+obs = torch.tensor([0.5, 0.5, 0, 1.5, 1.5 ])  # current state vector
+goal_obs = torch.tensor([1.5, 1.5, 0, 1.5, 1.5 ])
+
+actions = torch.tensor([0, 1, 2])  
+
+distances = critic(
+    obs[None, :],  
+    goal_obs[None, :],
+    action=actions,   
+)  
+best_action = distances.argmin(dim=0)  
+print(best_action)
+
+
+# 4 Test trajectory

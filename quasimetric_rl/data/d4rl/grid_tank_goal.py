@@ -13,13 +13,14 @@ from pathlib import Path
 class Tank_reach_goal(Env):
     
     def get_observation(self):
-        observation = np.concatenate([self.position, self.steering_direction, self.goal])
+        observation = np.concatenate([self.position, self.steering_direction])   #, self.goal])
         return observation
     
     def distance_function(self, pos, goal):
         return np.linalg.norm(pos-goal)
         
     def initialize_init_pos_and_goal(self):
+        '''
         self.position = np.random.uniform(0.01,2*np.pi*0.09,2)
         self.steering_direction = np.random.uniform(0,2*np.pi,1)
 
@@ -27,7 +28,11 @@ class Tank_reach_goal(Env):
         while self.distance_function(self.position, candidate_goal)< self.epsolon_distance_goal:
             candidate_goal = np.random.uniform(0.01,2*np.pi*0.09,2)
         self.goal = candidate_goal
-    
+        '''
+        self.steering_direction = np.zeros(1)
+        self.position = np.array([2*np.pi*0.2, 2*np.pi*0.2 ], dtype=np.float32)
+        self.goal = np.array([2*np.pi*0.8, 2*np.pi*0.8 ], dtype=np.float32)
+
     def __init__(self, angle_velocity = np.pi/8, velocity = 0.05):
         super(Tank_reach_goal, self).__init__()
         
@@ -38,8 +43,8 @@ class Tank_reach_goal(Env):
         self.epsolon_distance_goal = self.size*self.velocity_radius*0.25
 
         self.observation_boundary = (self.size, self.size)
-        self.observation_space = spaces.Box(low = np.zeros(5), 
-                                            high = np.ones(5)*self.size,
+        self.observation_space = spaces.Box(low = np.zeros(3), 
+                                            high = np.ones(3)*self.size,
                                             dtype = np.float64)
             
         self.initialize_init_pos_and_goal()
