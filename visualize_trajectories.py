@@ -1,15 +1,11 @@
 import numpy as np
-import random
 
-import os
-
-from stable_baselines.common.env_checker import check_env
 from quasimetric_rl.data.d4rl.grid_tank_goal import Tank_reach_goal
 import matplotlib.pyplot as plt
 
 env = Tank_reach_goal()
 
-name = 'trajectories/test_0000.npz'
+name = 'trajectories_custom/test_0200.npz'
 
 dict_episode = np.load(name)
 
@@ -26,8 +22,9 @@ def animate(i):
     ax.clear()
     # Get the point from the points list at index i
     point = trajectory_points[i,:]
-    plt.xlim([0, 40])
-    plt.ylim([0, 40])
+
+    plt.xlim([0, env.size])
+    plt.ylim([0, env.size])
 
     # Plot that point using the x and y coordinates
     ax.plot(point[0], point[1], color='green', 
@@ -40,7 +37,7 @@ def animate(i):
 
 
 ani = FuncAnimation(fig, animate, frames=300,
-                    interval=300, repeat=False)
+                    interval=1, repeat=False)
 
 ani.save("simple_animation.gif", dpi=300,
          writer=PillowWriter(fps=1))

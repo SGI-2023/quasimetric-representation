@@ -18,7 +18,7 @@ class Tank_reach_goal(Env):
 
         return np.array([x,y], dtype=np.int32)
     
-    def __init__(self, goal = (0.5, 0.5), init_position= (0.1,0.2), size = 60, steering_direction_subdivision = np.pi/12, velocity = 0.005):
+    def __init__(self, goal = (0.5, 0.5), init_position= (0.3,0.3), size = 60, steering_direction_subdivision = np.pi/12, velocity = 0.05):
         super(Tank_reach_goal, self).__init__()
         
         self.size = size
@@ -53,7 +53,7 @@ class Tank_reach_goal(Env):
         translation_to_go = translation_direction*self.velocity_step
         translation_to_go = translation_to_go.astype(int)
 
-        self.position += translation_to_go
+        self.position = translation_to_go + self.position
 
         self.position = np.clip(self.position, a_min=0, a_max=self.size)
 
