@@ -4,16 +4,16 @@ import random
 import os
 
 from stable_baselines.common.env_checker import check_env
-from quasimetric_rl.data.d4rl.grid_custom import Maze_simple
+from quasimetric_rl.data.d4rl.grid_tank_goal import Tank_reach_goal
 
 random.seed(0)
 np.random.seed(0)
 
-maze_env = Maze_simple()
+env = Tank_reach_goal()
 
-print(check_env(maze_env))
+print(check_env(env))
 
-name = 'trajectories'
+name = 'trajectories_custom'
 
 if not os.path.exists(name):
     os.makedirs(name)
@@ -27,9 +27,9 @@ for i in range(500):
     actions_list = []
     for j in range(1000):
         dict_data = {}
-        random_action = random.randrange(4)
-        observation = maze_env.position
-        next_observation, reward, terminal, _ = maze_env.step(random_action)
+        random_action = random.randrange(len(env.action_ditct))
+        observation = env.position
+        next_observation, reward, terminal, _ = env.step(random_action)
 
         observation_list.append(observation)
         next_obervation_list.append(next_observation)
@@ -49,4 +49,4 @@ for i in range(500):
     np.savez(name+f'/test_{i:04}', **dict_data)
     print(i)
 
-print(check_env(maze_env))
+print(check_env(env))
