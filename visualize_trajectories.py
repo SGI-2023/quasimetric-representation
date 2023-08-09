@@ -22,7 +22,9 @@ from matplotlib.animation import PillowWriter
 def animate(i):
     ax.clear()
     # Get the point from the points list at index i
-    point = trajectory_points[i,:]
+    observation = trajectory_points[i,:]
+    point = observation[0:2]
+    goal_point = observation[3:]
 
     plt.xlim([0, env.size+1])
     plt.ylim([0, env.size+1])
@@ -31,7 +33,6 @@ def animate(i):
     ax.plot(point[0], point[1], color='green', 
             label='original', marker='o')
     
-    goal_point = env.goal
     ax.plot(goal_point[0], goal_point[1], color='red', 
             label='original', marker='o')
 

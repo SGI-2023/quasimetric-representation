@@ -4,11 +4,14 @@ import random
 import os
 
 from quasimetric_rl.data.d4rl.grid_tank_goal import Tank_reach_goal
+from stable_baselines.common.env_checker import check_env
+
 
 random.seed(0)
 np.random.seed(0)
 
 env = Tank_reach_goal()
+check_env(env)
 
 name = 'trajectories_custom'
 
@@ -16,7 +19,7 @@ if not os.path.exists(name):
     os.makedirs(name)
 
 
-for i in range(1000):
+for i in range(2000):
     observation_list = []
     next_obervation_list = []
     reward_list = []

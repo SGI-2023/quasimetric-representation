@@ -13,7 +13,7 @@ from pathlib import Path
 class Tank_reach_goal(Env):
     
     def get_observation(self):
-        observation = np.concatenate([self.position, self.steering_direction])
+        observation = np.concatenate([self.position, self.steering_direction, self.goal])
         return observation
     
     def distance_function(self, pos, goal):
@@ -38,8 +38,8 @@ class Tank_reach_goal(Env):
         self.epsolon_distance_goal = self.size*self.velocity_radius*0.25
 
         self.observation_boundary = (self.size, self.size)
-        self.observation_space = spaces.Box(low = np.zeros(3), 
-                                            high = np.ones(3)*self.size,
+        self.observation_space = spaces.Box(low = np.zeros(5), 
+                                            high = np.ones(5)*self.size,
                                             dtype = np.float64)
             
         self.initialize_init_pos_and_goal()
