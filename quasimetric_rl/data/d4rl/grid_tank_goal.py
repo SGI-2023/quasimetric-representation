@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import *
 
+import functools
+
 import numpy as np
 import os
 import torch
@@ -135,9 +137,15 @@ def generator_load_episodes_custom_dataset(folder_name='trajectories_custom'):
         episode_data = EpisodeData(**episode_dict)
         yield episode_data
 
-for name in ['custom-grid-tank-goal-v1']:
-    register_offline_env(
-        'd4rl', name,
-        create_env_fn=create__tank_reach_goal_env,
-        load_episodes_fn=generator_load_episodes_custom_dataset,
-    )
+register_offline_env(
+    'd4rl', 'custom-grid-tank-goal-v1',
+    create_env_fn=create__tank_reach_goal_env,
+    load_episodes_fn=generator_load_episodes_custom_dataset,
+)
+
+register_offline_env(
+   'd4rl', 'custom-grid-tank-goal-randinit-v1',
+    create_env_fn=create__tank_reach_goal_env,
+    load_episodes_fn=functools.partial(generator_load_episodes_custom_dataset, 'trajectories_custom_random'),
+)
+
