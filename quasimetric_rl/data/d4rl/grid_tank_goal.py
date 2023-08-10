@@ -11,14 +11,14 @@ from ..base import register_offline_env, EpisodeData
 from pathlib import Path
 
 class Tank_reach_goal(Env):
-    
+
     def get_observation(self):
         observation = np.concatenate([self.position, self.steering_direction])   #, self.goal])
         return observation
-    
+
     def distance_function(self, pos, goal):
         return np.linalg.norm(pos-goal)
-        
+
     def initialize_init_pos_and_goal(self):
         '''
         self.position = np.random.uniform(0.01,2*np.pi*0.09,2)
@@ -33,20 +33,24 @@ class Tank_reach_goal(Env):
         self.position = np.array([2*np.pi*0.2, 2*np.pi*0.2 ], dtype=np.float32)
         self.goal = np.array([2*np.pi*0.8, 2*np.pi*0.8 ], dtype=np.float32)
 
+    def set_random_state(self):
+        self.position = np.random.uniform(0.,2*np.pi*0.2, 2).astype(np.float32)
+        self.steering_direction = np.random.uniform(0,2*np.pi,1).astype(np.float32)
+
     def __init__(self, angle_velocity = np.pi/8, velocity = 0.05):
         super(Tank_reach_goal, self).__init__()
-        
+
         self.size = 2*np.pi
         self.angle_velocity = angle_velocity
         self.velocity_radius = velocity
-        self.velocity_step = velocity*self.size 
+        self.velocity_step = velocity*self.size
         self.epsolon_distance_goal = self.size*self.velocity_radius*0.25
 
         self.observation_boundary = (self.size, self.size)
-        self.observation_space = spaces.Box(low = np.zeros(3), 
+        self.observation_space = spaces.Box(low = np.zeros(3),
                                             high = np.ones(3)*self.size,
                                             dtype = np.float64)
-            
+
         self.initialize_init_pos_and_goal()
 
         self.action_space = spaces.Discrete(3,)
@@ -57,7 +61,7 @@ class Tank_reach_goal(Env):
         observation = self.get_observation()
 
         return observation
-    
+
     def go_front(self):
         y_to_go = np.sin(self.steering_direction)
         x_to_go = np.cos(self.steering_direction)
@@ -85,7 +89,7 @@ class Tank_reach_goal(Env):
             self.steering_direction += self.angle_velocity
             if self.steering_direction > self.size:
                 self.steering_direction = np.ones(1)*self.size
-    
+
     def step(self,action):
 
         self.action_to_take(action)
@@ -107,7 +111,7 @@ def create__tank_reach_goal_env():
 def generator_load_episodes_custom_dataset(folder_name='trajectories_custom'):
     _, _, files = next(os.walk(folder_name))
     size = len(files)
-    
+
     folder_trajectories_name = Path(folder_name)
 
     for idx in range(size):
