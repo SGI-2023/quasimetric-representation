@@ -94,6 +94,9 @@ class QuasimetricModel(nn.Module):
             px, py = torch.broadcast_tensors(px, py)
             px, py = torch.stack([px, py], dim=-2), torch.stack([py, px], dim=-2)  # [B x 2 x D]
 
+        self.px = px
+        self.py = py
+        
         return self.quasimetric_head(px, py)
 
     # for type hint

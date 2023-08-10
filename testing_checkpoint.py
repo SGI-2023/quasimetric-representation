@@ -59,8 +59,7 @@ for i in range(1000):
       action=actions,   
   )  
   
-  best_action = distances.argmax(dim=0)  
-  print(best_action)
+  best_action = distances.argmin(dim=0)  
   observation, _, done, _ = env.step(best_action)
 
   max_value = distances.max(dim=0)

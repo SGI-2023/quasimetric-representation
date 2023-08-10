@@ -6,15 +6,16 @@
 args=(
     env.kind=d4rl
     num_workers=12
+    batch_size=512
     # encoder
-    agent.quasimetric_critic.model.encoder.arch="[1024,1024,1024]"
+    agent.quasimetric_critic.model.encoder.arch="[512,512]"
     # quasimetric model
-    agent.quasimetric_critic.model.quasimetric_model.projector_arch="[1024,1024]"
+    agent.quasimetric_critic.model.quasimetric_model.projector_arch="[512, 512]"
     # dynamics
-    agent.quasimetric_critic.model.latent_dynamics.arch="[1024,1024,1024]"
+    agent.quasimetric_critic.model.latent_dynamics.arch="[512,512]"
     agent.quasimetric_critic.losses.latent_dynamics.weight=1
     # critic lr
-    agent.quasimetric_critic.losses.critic_optim.lr=5e-4
+    agent.quasimetric_critic.losses.critic_optim.lr=5e-3
     agent.quasimetric_critic.losses.critic_optim.cosine_lr_decay_final_mul=0
     # actor
     agent.actor.model.arch="[1024,1024,1024,1024]"
