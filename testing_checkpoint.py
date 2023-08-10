@@ -13,7 +13,7 @@ import numpy as np
  
 from visualize_trajectories import visualize_trajectory
 
-expr_checkpoint = 'offline/results/d4rl_custom-grid-tank-goal-v1/iqe(dim=2048,components=64)_dyn=1_seed=60912/checkpoint_00210_00000_final.pth'  # FIXME
+expr_checkpoint = 'offline/results/d4rl_custom-grid-tank-goal-v1/iqe(dim=2048,components=64)_dyn=1_seed=60912/checkpoint_00013_00300.pth'  # FIXME
 
 expr_dir = os.path.dirname(expr_checkpoint)
 with open(expr_dir + '/config.yaml', 'r') as f:
@@ -61,11 +61,9 @@ for i in range(1000):
   
   best_action = distances.argmin(dim=0)  
   observation, _, done, _ = env.step(best_action)
-
-  max_value = distances.max(dim=0)
-
-  print(f'Iteration {i} and estimated {max_value} and observation {observation} and action {best_action}')
+  
+  print(i)
 
 trajectory_points = np.array(trajectory_points)
 
-visualize_trajectory(trajectory_points,env, name="agent_trajectory.gif")
+visualize_trajectory(trajectory_points,env, name="agent_trajectory2.gif")
