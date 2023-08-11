@@ -19,7 +19,7 @@ if not os.path.exists(name):
     os.makedirs(name)
 
 
-for i in range(2000):
+for i in range(1000):
     env.reset()
     observation_list = []
     next_obervation_list = []

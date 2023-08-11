@@ -46,7 +46,7 @@ class Tank_reach_goal(Env):
         self.angle_velocity = angle_velocity
         self.velocity_radius = velocity
         self.velocity_step = velocity*self.size
-        self.epsolon_distance_goal = self.size*self.velocity_radius*0.25
+        self.epsolon_distance_goal = self.size*self.velocity_radius
 
         self.observation_boundary = (self.size, self.size)
         self.observation_space = spaces.Box(low = np.zeros(3),
