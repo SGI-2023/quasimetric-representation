@@ -13,7 +13,7 @@ import numpy as np
  
 from visualize_trajectories import visualize_trajectory
 
-expr_checkpoint = 'offline/results/d4rl_custom-grid-tank-goal-v1/iqe(dim=2048,components=64)_dyn=1_seed=60912/checkpoint_00013_00300.pth'  # FIXME
+expr_checkpoint = 'offline/results/test_direction/test.pth'  # FIXME
 
 expr_dir = os.path.dirname(expr_checkpoint)
 with open(expr_dir + '/config.yaml', 'r') as f:
@@ -42,7 +42,8 @@ critic= agent.critics[0]
 
 # greedy 1-step planning
 observation = env.reset()
-goal_obs = torch.tensor([2*np.pi*0.8, 2*np.pi*0.8, 0 ], dtype=torch.float32)
+pos_goal = np.concatenate( [env.goal, np.zeros(2)])
+goal_obs = torch.tensor(pos_goal, dtype=torch.float32)
 trajectory_points = []
 
 done = False
