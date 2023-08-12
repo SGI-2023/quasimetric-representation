@@ -32,9 +32,16 @@ expr_checkpoint = 'offline/results/d4rl_custom-grid-tank-goal-v1/iqe(dim=2048,co
 dyn = float(os.environ['DYN'])
 expr_checkpoint = f"offline/results/d4rl_custom-grid-tank-goal-ez-v1/iqe(dim=2048,components=64)_dyn={dyn:g}_seed=60912/checkpoint_00273_00000_final.pth"
 ckpt_name = os.environ.get('CKPT_NAME', 'checkpoint_00273_00000_final.pth')
-if not ckpt_name.endswith('.pth'):
-    ckpt_name += '.pth'
-expr_checkpoint = f"offline/results/d4rl_custom-grid-tank-goal-tz-normG-randG-v1/iqe(dim=2048,components=64)_dyn={dyn:g}_seed=60912/{ckpt_name}"
+expr_dir = f"offline/results/d4rl_custom-grid-tank-goal-tz-normG-randG-v1/iqe(dim=2048,components=64)_dyn={dyn:g}_seed=60912/"
+if 'CKPT_NAME' in os.environ:
+    if not ckpt_name.endswith('.pth'):
+        ckpt_name += '.pth'
+    expr_checkpoint = expr_dir + ckpt_name
+else:
+    import glob
+    final_ckpts = list(glob.glob(os.path.join(glob.escape(expr_dir), 'checkpoint_*_final.pth')))
+    assert len(final_ckpts) == 1
+    expr_checkpoint = final_ckpts[0]
 
 print(expr_checkpoint)
 
