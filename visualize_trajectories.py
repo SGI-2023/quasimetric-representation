@@ -18,15 +18,15 @@ def visualize_trajectory(trajectory_points, env,  name = "visualize_trajectory.g
         observation = trajectory_points[i,:]
         point = observation[0:2]
 
-        plt.xlim([0, env.size+1])
-        plt.ylim([0, env.size+1])
+        plt.xlim([0, env.size])
+        plt.ylim([0, env.size])
 
         # Plot that point using the x and y coordinates
-        ax.plot(point[0], point[1], color='green', 
+        ax.plot(point[0], point[1], color='green',
                 label='original', marker='o')
-        
+
         goal_point = env.goal
-        ax.plot(goal_point[0], goal_point[1], color='red', 
+        ax.plot(goal_point[0], goal_point[1], color='red',
                 label='original', marker='o')
 
 
@@ -34,7 +34,7 @@ def visualize_trajectory(trajectory_points, env,  name = "visualize_trajectory.g
     ani = FuncAnimation(fig, animate, frames=num_frames,
                         interval=1, repeat=False)
 
-    ani.save(name, dpi=300,
+    ani.save(name, dpi=100,
             writer=PillowWriter(fps=30))
     plt.close()
 

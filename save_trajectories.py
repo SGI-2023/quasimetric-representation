@@ -1,19 +1,28 @@
+r'''
+ENV='custom-grid-tank-goal-tz-normG-randG-v1' python save_trajectories.py
+'''
+
 import numpy as np
 import random
 
 import os
 
-from quasimetric_rl.data.d4rl.grid_tank_goal import Tank_reach_goal
-from stable_baselines.common.env_checker import check_env
+from quasimetric_rl.data import Dataset
 
 
 random.seed(0)
 np.random.seed(0)
 
-env = Tank_reach_goal()
-check_env(env)
+env_name = os.environ.get('ENV', 'custom-grid-tank-goal-v1')
+assert env_name.startswith('custom-grid-tank-goal-')
+name = '_'.join(
+    ['trajectories'] + list(env_name.split('-')[4:-1])
+)
 
-name = 'trajectories_custom'
+print(env_name, name)
+# 'trajectories_ez_custom'
+
+env = Dataset.Conf(kind='d4rl', name=env_name).make(dummy=True).create_env()
 
 if not os.path.exists(name):
     os.makedirs(name)
@@ -38,7 +47,7 @@ for i in range(1000):
         reward_list.append(reward)
         terminal_list.append(terminal)
         actions_list.append(random_action)
-        
+
         if terminal:
             print("Found the end!")
             break
