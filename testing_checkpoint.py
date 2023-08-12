@@ -1,6 +1,6 @@
 r'''
 for s in {1..100}; do
-env SEED=$s TEMP=1 CKPT_NAME="checkpoint_00077_00026.pth" RAND_GOAL=1 DYN=1 python testing_checkpoint.py
+env SEED=$s TEMP=1 CKPT_NAME="checkpoint_00077_00026.pth" DYN=1 python testing_checkpoint.py
 done
 '''
 
@@ -72,9 +72,6 @@ torch.manual_seed(np.random.Generator(np.random.PCG64(torch_seed)).integers(1 <<
 env.seed(np.random.Generator(np.random.PCG64(env_seed)).integers(1 << 31))
 
 observation = env.reset()
-rand_goal = strtobool(os.environ.get('RAND_GOAL', '0'))
-if rand_goal:
-    env.randomize_goal()
 temp = float(os.environ.get('TEMP', '0'))
 observation = env.get_observation()
 if hasattr(env, 'get_goal_observation'):
@@ -113,7 +110,7 @@ for i in range(1000):
 
 trajectory_points = np.array(trajectory_points)
 
-savedir = f"agent_dyn={dyn:g}/{ckpt_name.rsplit('.', 1)[0]}/plan_randG={str(rand_goal)[0]}_tau={temp:g}/"
+savedir = f"agent_dyn={dyn:g}/{ckpt_name.rsplit('.', 1)[0]}/plan_tau={temp:g}/"
 utils.mkdir(savedir)
 visualize_trajectory((trajectory_points + 1) / 2 * (env.size - 1),env, name=f"{savedir}/s={seed:06d}_trajectory.gif")
 
