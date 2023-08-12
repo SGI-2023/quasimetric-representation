@@ -23,7 +23,7 @@ from typing import cast
 
 from visualize_trajectories import visualize_trajectory
 
-expr_checkpoint = 'offline/results/d4rl_custom-grid-tank-goal-v1/iqe(dim=2048,components=64)_dyn=1_seed=60912/checkpoint_00013_00300.pth'  # FIXME
+expr_checkpoint = 'offline/results/test_direction/test.pth'  # FIXME
 
 expr_checkpoint = 'offline/results/d4rl_custom-grid-tank-goal-randinit-v1/iqe(dim=2048,components=64)_dyn=1_seed=60912/checkpoint_00025_03549.pth'
 
@@ -73,11 +73,17 @@ env.seed(np.random.Generator(np.random.PCG64(env_seed)).integers(1 << 31))
 
 observation = env.reset()
 rand_goal = strtobool(os.environ.get('RAND_GOAL', '0'))
-if rand_goal:  #strtobool(os.environ.get('RAND_GOAL'), '0'):
+if rand_goal:
     env.randomize_goal()
 temp = float(os.environ.get('TEMP', '0'))
 observation = env.get_observation()
-goal_obs = torch.tensor(env.get_goal_observation(), dtype=torch.float32)
+if hasattr(env, 'get_goal_observation'):
+    # tz's version
+    goal_obs = torch.tensor(env.get_goal_observation(), dtype=torch.float32)
+else:
+    # original env
+    pos_goal = np.concatenate( [env.goal, np.zeros(2)])
+    goal_obs = torch.tensor(pos_goal, dtype=torch.float32)
 trajectory_points = []
 
 done = False
