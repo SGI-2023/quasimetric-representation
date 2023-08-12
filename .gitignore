@@ -1,4 +1,6 @@
 trajectories*/
+tz_*/
+agent_*/
 *.gif
 __pycache__
 *.pth
@@ -27,4 +29,3 @@ __pycache__
 
 .vscode
 
->>>>>>> edf059705eebd921ce78de13f0077d97d338e0b4

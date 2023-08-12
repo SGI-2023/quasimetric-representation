@@ -165,5 +165,6 @@ def convert_dict_to_EpisodeData_iter(sequence_dataset_episodes: Iterator[Mapping
 from . import maze2d  # register
 from . import grid_custom
 from . import grid_tank_goal
+from . import grid_tank_goal_tz
 
 __all__ = ['D4RLDataset']
