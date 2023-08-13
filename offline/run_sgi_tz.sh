@@ -26,5 +26,5 @@ args=(
     agent.actor.losses.behavior_cloning.weight=0.05
 )
 
-exec python -m offline.main "${args[@]}" env.name='custom-grid-tank-goal-tz-normG-randG-v1' agent.actor=null total_optim_steps=200000 save_steps=25000 agent.num_critics=10 "${@}"
+exec python -m offline.main "${args[@]}" env.name='custom-grid-tank-goal-tz-normG-randG-v1' agent.actor=null total_optim_steps=200000 save_steps=25000 agent.num_critics=1 "${@}"
 

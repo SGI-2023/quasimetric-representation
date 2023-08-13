@@ -83,6 +83,8 @@ temp = float(os.environ.get('TEMP', '0'))
 observation = env.get_observation()
 if hasattr(env, 'get_goal_observation'):
     # tz's version
+    if env.rand_goal:
+        env.randomize_goal()  # this is unnecessary... but ensures some consistent tasks compared to some old evaluts
     goal_obs = torch.tensor(env.get_goal_observation(), dtype=torch.float32)
 else:
     # original env
