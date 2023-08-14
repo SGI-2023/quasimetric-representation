@@ -43,7 +43,17 @@ else:
     assert len(final_ckpts) == 1
     expr_checkpoint = final_ckpts[0]
 
-print(expr_checkpoint)
+print('expr', expr_checkpoint)
+seed = int(os.environ.get('SEED', '4567'))
+temp = float(os.environ.get('TEMP', '0'))
+
+savedir = f"agent_dyn={dyn:g}/{ckpt_name.rsplit('.', 1)[0]}/plan_tau={temp:g}/"
+result_file = f"{savedir}/s={seed:06d}.json"
+print('result_file', result_file)
+
+overwrite = strtobool(os.environ.get('OVERWRITE', '1'))
+if not overwrite and os.path.exists(result_file):
+    sys.exit(0)
 
 expr_dir = os.path.dirname(expr_checkpoint)
 with open(expr_dir + '/config.yaml', 'r') as f:
@@ -71,15 +81,12 @@ actions = torch.tensor([0, 1, 2])
 critic= agent.critics[0]
 
 # greedy 1-step planning
-seed = int(os.environ.get('SEED', '4567'))
-
 torch_seed, np_seed, env_seed = utils.split_seed(cast(int, seed), 3)
 np.random.seed(np.random.Generator(np.random.PCG64(np_seed)).integers(1 << 31))
 torch.manual_seed(np.random.Generator(np.random.PCG64(torch_seed)).integers(1 << 31))
 env.seed(np.random.Generator(np.random.PCG64(env_seed)).integers(1 << 31))
 
 observation = env.reset()
-temp = float(os.environ.get('TEMP', '0'))
 observation = env.get_observation()
 if hasattr(env, 'get_goal_observation'):
     # tz's version
@@ -119,13 +126,12 @@ for i in range(1000):
 
 trajectory_points = np.array(trajectory_points)
 
-savedir = f"agent_dyn={dyn:g}/{ckpt_name.rsplit('.', 1)[0]}/plan_tau={temp:g}/"
 utils.mkdir(savedir)
+print(dict(succ=done, ts=trajectory_points.shape[0]))
+print(f"{savedir}/s={seed:06d}_trajectory.gif")
 visualize_trajectory((trajectory_points + 1) / 2 * (env.size - 1),env, name=f"{savedir}/s={seed:06d}_trajectory.gif")
 
-print(f"{savedir}/s={seed:06d}_trajectory.gif")
 with open(f"{savedir}/s={seed:06d}.json", "w") as f:
     import json
-    print(dict(succ=done, ts=trajectory_points.shape[0]))
     print(json.dumps(dict(succ=done, ts=trajectory_points.shape[0])), file=f)
 
