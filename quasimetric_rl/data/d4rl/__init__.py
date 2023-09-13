@@ -166,5 +166,6 @@ from . import maze2d  # register
 from . import grid_custom
 from . import grid_tank_goal
 from . import grid_tank_goal_tz
+from . import maze2d_custom
 
 __all__ = ['D4RLDataset']

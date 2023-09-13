@@ -41,7 +41,6 @@ def preprocess_maze2d_fix(env: 'd4rl.pointmaze.MazeEnv', dataset: Mapping[str, n
     ##
     ## NB that this is different from diffuser code!
 
-    assert not np.any(dataset['terminals'])
     dataset['next_observations'] = dataset['observations'][1:]
 
     goal_diff = np.abs(dataset['infos/goal'][:-1] - dataset['infos/goal'][1:]).sum(-1)  # diff with next
