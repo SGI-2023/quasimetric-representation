@@ -89,8 +89,12 @@ OPEN = \
         "#######"
 
 
-
 type_of_maze = LARGE_MAZE
+
+def pre_process_maze2d_fix_custom(env: 'd4rl.pointmaze.MazeEnv', dataset: Mapping[str, np.ndarray]):
+    dataset_fix = preprocess_maze2d_fix(env, dataset)
+
+    return dataset_fix
 
 def load_episodes_maze2d_custom():
     offline_maze = maze_model.MazeEnv(type_of_maze)
@@ -99,7 +103,7 @@ def load_episodes_maze2d_custom():
     yield from convert_dict_to_EpisodeData_iter(
         sequence_dataset(
             offline_maze,
-            preprocess_maze2d_fix(
+            pre_process_maze2d_fix_custom(
                 offline_maze,
                 offline_maze.get_dataset(h5path='quasimetric_rl/data/d4rl/maze2d-umaze-v1.hdf5'),
             ),
