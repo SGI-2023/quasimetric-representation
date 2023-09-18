@@ -39,7 +39,13 @@ class QRLLosses(Module):
 
         for idx, (critic, critic_loss) in enumerate(zip(agent.critics, self.critic_losses)):
 
-            zx, zy = critic.encoder(torch.stack([data.observations, data.next_observations], dim=0)).unbind(0)
+            input_data_encoder = torch.stack([data.observations, data.next_observations], dim=0)
+            z_env = critic.encoder_environment(data.environment_attributes)
+
+            zx, zy = critic.encoder(input_data_encoder).unbind(0)
+
+            zx = z_env + zx
+
             critic_batch_info = quasimetric_critic.CriticBatchInfo(
                 critic=critic,
                 zx=zx,
