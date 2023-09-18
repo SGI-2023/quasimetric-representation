@@ -8,6 +8,9 @@ from d4rl import offline_env
 from d4rl.pointmaze.dynamic_mjc import MJCModel
 import numpy as np
 import random
+from sklearn import preprocessing
+import torch
+
 import functools
 
 from d4rl.pointmaze import maze_model
@@ -93,6 +96,18 @@ type_of_maze = LARGE_MAZE
 
 def pre_process_maze2d_fix_custom(env: 'd4rl.pointmaze.MazeEnv', dataset: Mapping[str, np.ndarray]):
     dataset_fix = preprocess_maze2d_fix(env, dataset)
+    size_of_dataset = dataset_fix['actions'].shape[0]
+
+    le = preprocessing.LabelEncoder()
+
+    maze_splitted_char = list(type_of_maze)
+    
+    encoded_info = le.fit_transform(maze_splitted_char)
+
+    type_of_maze_data = np.array(encoded_info)[None,...]
+
+    type_of_maze_data_expanded = np.repeat(type_of_maze_data, size_of_dataset, axis=0)
+    dataset_fix['environment_attributes'] = type_of_maze_data_expanded
 
     return dataset_fix
 

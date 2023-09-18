@@ -147,6 +147,7 @@ def convert_dict_to_EpisodeData_iter(sequence_dataset_episodes: Iterator[Mapping
             actions=torch.as_tensor(episode['actions'], dtype=torch.float32),
             rewards=torch.as_tensor(episode['rewards'], dtype=torch.float32),
             terminals=torch.as_tensor(episode['terminals'], dtype=torch.bool),
+            environment_attributes = torch.as_tensor(episode['environment_attributes'], dtype=torch.float32),
             timeouts=(
                 torch.as_tensor(episode['timeouts'], dtype=torch.bool) if 'timeouts' in episode else
                 torch.zeros(episode['terminals'].shape, dtype=torch.bool)

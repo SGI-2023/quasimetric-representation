@@ -7,6 +7,8 @@ import pickle
 import gzip
 import h5py
 import argparse
+from sklearn import preprocessing
+
 
 
 def reset_data():
@@ -93,6 +95,16 @@ def main():
 
         if args.render:
             env.render()
+
+    le = preprocessing.LabelEncoder()
+    maze_splitted_char = list(maze_spec)
+    
+    encoded_info = le.fit_transform(maze_splitted_char)
+
+    type_of_maze_data = np.array(encoded_info)[None,...]
+
+    type_of_maze_data_expanded = np.repeat(type_of_maze_data, len(data['observations']), axis=0)
+    data['environment_attributes'] = type_of_maze_data_expanded
 
     
     if args.noisy:

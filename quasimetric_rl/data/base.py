@@ -30,6 +30,8 @@ class BatchData(TensorCollectionAttrsMixin):  # TensorCollectionAttrsMixin has s
     rewards: torch.Tensor
     terminals: torch.Tensor
     timeouts: torch.Tensor
+    environment_attributes: torch.Tensor
+
 
     future_observations: torch.Tensor  # sampled!
 
@@ -71,6 +73,8 @@ class MultiEpisodeData(TensorCollectionAttrsMixin):
     terminals: torch.Tensor
     # cat all timeouts from all episodes. Each episode has L timeouts.
     timeouts: torch.Tensor
+    #Cat all environment attributes regarding which environment it is currently 
+    environment_attributes:torch.Tensor
     # cat all observation infos from all episodes. Each episode has L + 1 elements.
     observation_infos: Mapping[str, torch.Tensor] = attrs.Factory(dict)
     # cat all transition infos from all episodes. Each episode has L elements.
@@ -117,7 +121,9 @@ class EpisodeData(MultiEpisodeData):
                                next_observations: Union[np.ndarray, torch.Tensor],
                                rewards: Union[np.ndarray, torch.Tensor],
                                terminals: Union[np.ndarray, torch.Tensor],
-                               timeouts: Union[np.ndarray, torch.Tensor]):
+                               timeouts: Union[np.ndarray, torch.Tensor],
+                               environment_attributes: Union[np.ndarray, torch.Tensor],
+                               ):
         observations = torch.tensor(observations)
         next_observations=torch.tensor(next_observations)
         all_observations = torch.cat([observations, next_observations[-1:]], dim=0)
@@ -128,6 +134,7 @@ class EpisodeData(MultiEpisodeData):
             rewards=torch.tensor(rewards),
             terminals=torch.tensor(terminals),
             timeouts=torch.tensor(timeouts),
+            environment_attributes = torch.tensor(environment_attributes)
         )
 
 
@@ -283,6 +290,8 @@ class Dataset:
             rewards=self.raw_data.rewards[indices],
             terminals=terminals,
             timeouts=self.raw_data.timeouts[indices],
+            environment_attributes = self.raw_data.environment_attributes[indices]
+            
         )
 
     def __len__(self):
