@@ -92,7 +92,7 @@ OPEN = \
         "#######"
 
 
-type_of_maze = LARGE_MAZE
+type_of_maze = U_MAZE
 
 def pre_process_maze2d_fix_custom(env: 'd4rl.pointmaze.MazeEnv', dataset: Mapping[str, np.ndarray]):
     dataset_fix = preprocess_maze2d_fix(env, dataset)

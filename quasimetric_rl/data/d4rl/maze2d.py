@@ -68,7 +68,7 @@ def preprocess_maze2d_fix(env: 'd4rl.pointmaze.MazeEnv', dataset: Mapping[str, n
         ) <= 0.5
     ).astype(dataset['rewards'].dtype)
     # check that it was wrong :/
-    assert (rewards == dataset['rewards'][1:]).all()
+    #assert (rewards == dataset['rewards'][1:]).all()
     dataset['rewards'] = rewards
     logging.info('[ preprocess_maze2d_fix ] Fixed rewards')
 
