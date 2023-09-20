@@ -27,4 +27,4 @@ args=(
     agent.actor.losses.behavior_cloning.weight=0.05
 )
 
-exec python -m offline.main "${args[@]}" env.name='maze2d-custom' agent.actor=null agent.num_critics=1 "${@}"
+exec python -m offline.main "${args[@]}" env.name='maze2d-custom' agent.actor=null total_optim_steps=100000 agent.num_critics=1 "${@}"
