@@ -9,6 +9,7 @@ from ...utils import MLP, LatentTensor
 
 from ....data import EnvSpec
 from ....data.env_spec.input_encoding import InputEncoding
+from ....data.d4rl.type_of_mazes import chosen_maze
 
 
 class EnvironmentEncoder(nn.Module):
@@ -30,7 +31,7 @@ class EnvironmentEncoder(nn.Module):
 
         arch: Tuple[int, ...] = (512, 512)
         latent_size: int = 128
-        input_shape: int = 116
+        input_shape: int = len(chosen_maze)
 
         def make(self) -> 'EnvironmentEncoder':
             return EnvironmentEncoder(

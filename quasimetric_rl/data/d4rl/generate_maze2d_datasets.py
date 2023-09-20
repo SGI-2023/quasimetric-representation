@@ -1,13 +1,12 @@
 import gym
-import logging
 from d4rl.pointmaze import waypoint_controller
 from d4rl.pointmaze import maze_model
 import numpy as np
-import pickle
-import gzip
 import h5py
 import argparse
 from sklearn import preprocessing
+
+from type_of_mazes import chosen_maze
 
 
 
@@ -38,12 +37,6 @@ def npify(data):
             dtype = np.float32
 
         data[k] = np.array(data[k], dtype=dtype)
-U_MAZE = \
-        "#####\\"+\
-        "#GOO#\\"+\
-        "###O#\\"+\
-        "#OOO#\\"+\
-        "#####"
 
 
 def main():
@@ -55,7 +48,7 @@ def main():
     args = parser.parse_args()
 
     env = gym.make(args.env_name)
-    maze_spec = U_MAZE
+    maze_spec = chosen_maze
     max_episode_steps = env._max_episode_steps
 
     controller = waypoint_controller.WaypointController(maze_spec)
