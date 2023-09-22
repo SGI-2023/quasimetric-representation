@@ -4,7 +4,7 @@ from typing import *
 
 
 
-LARGE_MAZE = \
+LAROE_MAZE = \
         "############\\"+\
         "#OOOO#OOOOO#\\"+\
         "#O##O#O#O#O#\\"+\
@@ -12,12 +12,12 @@ LARGE_MAZE = \
         "#O####O###O#\\"+\
         "#OO#O#OOOOO#\\"+\
         "##O#O#O#O###\\"+\
-        "#OO#OOO#OGO#\\"+\
+        "#OO#OOO#OOO#\\"+\
         "############"
 
-LARGE_MAZE_EVAL = \
+LAROE_MAZE_EVAL = \
         "############\\"+\
-        "#OO#OOO#OGO#\\"+\
+        "#OO#OOO#OOO#\\"+\
         "##O###O#O#O#\\"+\
         "#OO#O#OOOOO#\\"+\
         "#O##O#OO##O#\\"+\
@@ -33,12 +33,12 @@ MEDIUM_MAZE = \
         '##OOO###\\'+\
         '#OO#OOO#\\'+\
         '#O#OO#O#\\'+\
-        '#OOO#OG#\\'+\
+        '#OOO#OO#\\'+\
         "########"
 
 MEDIUM_MAZE_EVAL = \
         '########\\'+\
-        '#OOOOOG#\\'+\
+        '#OOOOOO#\\'+\
         '#O#O##O#\\'+\
         '#OOOO#O#\\'+\
         '###OO###\\'+\
@@ -55,14 +55,14 @@ SMALL_MAZE = \
 
 U_MAZE = \
         "#####\\"+\
-        "#GOO#\\"+\
+        "#OOO#\\"+\
         "###O#\\"+\
         "#OOO#\\"+\
         "#####"
 
 U_MAZE_EVAL = \
         "#####\\"+\
-        "#OOG#\\"+\
+        "#OOO#\\"+\
         "#O###\\"+\
         "#OOO#\\"+\
         "#####"
@@ -70,7 +70,7 @@ U_MAZE_EVAL = \
 OPEN = \
         "#######\\"+\
         "#OOOOO#\\"+\
-        "#OOGOO#\\"+\
+        "#OOOOO#\\"+\
         "#OOOOO#\\"+\
         "#######"
 
