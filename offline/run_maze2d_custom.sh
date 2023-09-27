@@ -30,4 +30,4 @@ args=(
     resume_if_possible=true
 )
 
-exec python -m offline.main "${args[@]}" env.name='maze2d-custom' agent.actor=null total_optim_steps=10000 agent.num_critics=1 "${@}"
+exec python -m offline.main "${args[@]}" env.name='maze2d-custom'  total_optim_steps=1000 agent.num_critics=1 "${@}"

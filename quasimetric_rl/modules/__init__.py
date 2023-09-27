@@ -41,7 +41,7 @@ class QRLLosses(Module):
 
             input_data_encoder = torch.stack([data.observations, data.next_observations], dim=0)
             z_env = critic.encoder_environment(data.environment_attributes)
-
+            # Concatenate it with z_env to get a more accurate reprensentation
             zx, zy = critic.encoder(input_data_encoder).unbind(0)
 
             zx = z_env + zx

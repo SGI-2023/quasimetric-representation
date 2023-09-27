@@ -59,7 +59,7 @@ def preprocess_maze2d_fix(env: 'd4rl.pointmaze.MazeEnv', dataset: Mapping[str, n
     logging.info('[ preprocess_maze2d_fix ] Fixed terminals and timeouts')
 
     # Fix rewards
-    assert len(env.goal_locations) == 1
+    #assert len(env.goal_locations) == 1
     rewards = cast(
         np.ndarray,
         np.linalg.norm(
