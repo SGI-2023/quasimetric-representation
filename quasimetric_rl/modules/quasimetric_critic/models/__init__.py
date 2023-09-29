@@ -27,10 +27,11 @@ class QuasimetricCritic(Module):
 
         def make(self, *, env_spec: EnvSpec) -> 'QuasimetricCritic':
 
+            encoder_environment = self.encoder_environment.make(
+            )
             encoder = self.encoder.make(
                 env_spec=env_spec,
-            )
-            encoder_environment = self.encoder_environment.make(
+                env_param_size=encoder_environment.latent_size
             )
             quasimetric_model = self.quasimetric_model.make(
                 input_size=encoder.latent_size,

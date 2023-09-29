@@ -11,6 +11,7 @@ from ....data import EnvSpec
 from ....data.env_spec.input_encoding import InputEncoding
 
 
+
 class Encoder(nn.Module):
     r"""
     (*, *input_shape)                      Input
@@ -31,24 +32,26 @@ class Encoder(nn.Module):
         arch: Tuple[int, ...] = (512, 512)
         latent_size: int = 128
 
-        def make(self, *, env_spec: EnvSpec) -> 'Encoder':
+        def make(self, *, env_spec: EnvSpec, env_param_size: int) -> 'Encoder':
             return Encoder(
                 env_spec=env_spec,
                 arch=self.arch,
                 latent_size=self.latent_size,
+                env_param_size=env_param_size
             )
 
     input_shape: torch.Size
     input_encoding: InputEncoding
     encoder: MLP
     latent_size: int
+    env_param_size: int
 
     def __init__(self, *, env_spec: EnvSpec,
-                 arch: Tuple[int, ...], latent_size: int, **kwargs):
+                 arch: Tuple[int, ...], latent_size: int, env_param_size: int, **kwargs):
         super().__init__(**kwargs)
         self.input_shape = env_spec.observation_shape
-        self.input_encoding = env_spec.make_observation_input()
-        encoder_input_size = self.input_encoding.output_size
+        self.input_encoding = env_spec.make_observation_input() 
+        encoder_input_size = self.input_encoding.output_size + env_param_size
         self.encoder = MLP(encoder_input_size, latent_size, hidden_sizes=arch)
         self.latent_size = latent_size
 
