@@ -96,29 +96,29 @@ def generate_maze(width, height, seed = 4):
     while stack:
         x, y = stack[-1]
         random.shuffle(directions)
-        neighbors = []
+
+        has_neighbors = False
         
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
             if 0 <= nx <= width-1 and 0 <= ny <= height-1 and maze[ny][nx] == '#':
-                neighbors.append((nx, ny, dx, dy))
 
-        if neighbors:
-            nx, ny, dx, dy = random.choice(neighbors)
-            maze[ny][nx] = 'O'
-            
-            if dx == 2:
-                maze[y][x+1] = 'O'
-            elif dx == -2:
-                maze[y][x-1] = 'O'
-            elif dy == 2:
-                maze[y+1][x] = 'O'
-            elif dy == -2:
-                maze[y-1][x] = 'O'
-            
-            stack.append((nx, ny))
-        else:
-            stack.pop()
+                maze[ny][nx] = 'O'
+                
+                if dx == 2:
+                    maze[y][x+1] = 'O'
+                elif dx == -2:
+                    maze[y][x-1] = 'O'
+                elif dy == 2:
+                    maze[y+1][x] = 'O'
+                elif dy == -2:
+                    maze[y-1][x] = 'O'
+                
+                stack.append((nx, ny))
+                has_neighbors = True
+        
+        if not has_neighbors:
+             stack.pop()
 
     def display_maze(maze):
         maze_str = []
