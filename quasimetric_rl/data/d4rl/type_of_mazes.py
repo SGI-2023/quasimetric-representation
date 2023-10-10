@@ -103,6 +103,8 @@ def break_some_walls(maze, width, height, factor = 0.8):
 	for (i,j) in coords_mod:
 		maze[i][j] = 'O'
 def generate_maze(width, height, seed = 4):
+    width = width + 1
+    height = height + 1
 
     random.seed(seed)
     maze = [['#' for _ in range(width)] for _ in range(height)]
@@ -142,10 +144,13 @@ def generate_maze(width, height, seed = 4):
         
         if not has_neighbors:
              stack.pop()
-             
+    
+    
     break_some_walls(maze, width, height)
+    
+    maze = maze[:width][:height]
 
-    return display_maze(maze)
+    return display_maze(maze[:width][:height])
 
 def draw_and_save_maze(maze_string, filename):
     rows = maze_string.split('\\')
