@@ -3,6 +3,7 @@ from typing import *
 import random
 import numpy as np
 import matplotlib.pyplot as plt
+from itertools import product
 
 
 LAROE_MAZE = \
@@ -77,8 +78,30 @@ OPEN = \
 
 chosen_maze = U_MAZE
 
+def display_maze(maze):
+        maze_str = []
+        for row in maze:
+            str_row = ''.join(row)
+            print(str_row)
+            maze_str.append(str(str_row))
+        return '\\'.join(maze_str)
 
 
+def break_some_walls(maze, width, height, factor = 0.8):
+	coords_mod = []
+     
+	for (i,j) in product(range(1,width-1), range(1,height-1)):          
+
+		if maze[i][j]=='#':
+			vertical_corridor = maze[i][j+1] == 'O' and maze[i][j-1] == 'O' and maze[i+1][j] == '#' and maze[i-1][j] == '#'
+			horizontal_corridor = maze[i][j+1] == '#' and maze[i][j-1] == '#' and maze[i+1][j] == 'O' and maze[i-1][j] == 'O'
+			random_dice = random.random() > factor
+
+			if (vertical_corridor or horizontal_corridor) and random_dice:
+				coords_mod.append((i,j))
+
+	for (i,j) in coords_mod:
+		maze[i][j] = 'O'
 def generate_maze(width, height, seed = 4):
 
     random.seed(seed)
@@ -119,14 +142,8 @@ def generate_maze(width, height, seed = 4):
         
         if not has_neighbors:
              stack.pop()
-
-    def display_maze(maze):
-        maze_str = []
-        for row in maze:
-            str_row = ''.join(row)
-            print(str_row)
-            maze_str.append(str(str_row))
-        return '\\'.join(maze_str)
+             
+    break_some_walls(maze, width, height)
 
     return display_maze(maze)
 
