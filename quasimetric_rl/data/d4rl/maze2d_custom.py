@@ -21,15 +21,17 @@ def pre_process_maze2d_fix_custom(env: 'd4rl.pointmaze.MazeEnv', dataset: Mappin
     le = preprocessing.LabelEncoder()
 
     maze_splitted_char = list(chosen_maze)
-    
+
     encoded_info = le.fit_transform(maze_splitted_char)
 
-    type_of_maze_data = np.array(encoded_info)[None,...]
+    type_of_maze_data = np.array(encoded_info)[None, ...]
 
-    type_of_maze_data_expanded = np.repeat(type_of_maze_data, size_of_dataset, axis=0)
+    type_of_maze_data_expanded = np.repeat(
+        type_of_maze_data, size_of_dataset, axis=0)
     dataset_fix['environment_attributes'] = type_of_maze_data_expanded
 
     return dataset_fix
+
 
 def load_episodes_maze2d_custom():
     offline_maze = maze_model.MazeEnv(chosen_maze)
@@ -40,10 +42,12 @@ def load_episodes_maze2d_custom():
             offline_maze,
             pre_process_maze2d_fix_custom(
                 offline_maze,
-                offline_maze.get_dataset(h5path='quasimetric_rl/data/d4rl/maze2d-umaze-v1.hdf5'),
+                offline_maze.get_dataset(
+                    h5path='quasimetric_rl/data/d4rl/maze2d-umaze-v1.hdf5'),
             ),
         ),
     )
+
 
 def load_environment_custom():
     env = maze_model.MazeEnv(chosen_maze)
@@ -53,7 +57,7 @@ def load_environment_custom():
 
 
 register_offline_env(
-        'd4rl', 'maze2d-custom',
-        create_env_fn=load_environment_custom,
-        load_episodes_fn=load_episodes_maze2d_custom,
-    )
+    'd4rl', 'maze2d-custom',
+    create_env_fn=load_environment_custom,
+    load_episodes_fn=load_episodes_maze2d_custom,
+)

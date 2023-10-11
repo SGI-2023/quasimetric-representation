@@ -7,108 +7,113 @@ from itertools import product
 
 
 LAROE_MAZE = \
-        "############\\"+\
-        "#OOOO#OOOOO#\\"+\
-        "#O##O#O#O#O#\\"+\
-        "#OOOOOO#OOO#\\"+\
-        "#O####O###O#\\"+\
-        "#OO#O#OOOOO#\\"+\
-        "##O#O#O#O###\\"+\
-        "#OO#OOO#OOO#\\"+\
-        "############"
+    "############\\" +\
+    "#OOOO#OOOOO#\\" +\
+    "#O##O#O#O#O#\\" +\
+    "#OOOOOO#OOO#\\" +\
+    "#O####O###O#\\" +\
+    "#OO#O#OOOOO#\\" +\
+    "##O#O#O#O###\\" +\
+    "#OO#OOO#OOO#\\" +\
+    "############"
 
 LAROE_MAZE_EVAL = \
-        "############\\"+\
-        "#OO#OOO#OOO#\\"+\
-        "##O###O#O#O#\\"+\
-        "#OO#O#OOOOO#\\"+\
-        "#O##O#OO##O#\\"+\
-        "#OOOOOO#OOO#\\"+\
-        "#O##O#O#O###\\"+\
-        "#OOOO#OOOOO#\\"+\
-        "############"
+    "############\\" +\
+    "#OO#OOO#OOO#\\" +\
+    "##O###O#O#O#\\" +\
+    "#OO#O#OOOOO#\\" +\
+    "#O##O#OO##O#\\" +\
+    "#OOOOOO#OOO#\\" +\
+    "#O##O#O#O###\\" +\
+    "#OOOO#OOOOO#\\" +\
+    "############"
 
 MEDIUM_MAZE = \
-        '########\\'+\
-        '#OO##OO#\\'+\
-        '#OO#OOO#\\'+\
-        '##OOO###\\'+\
-        '#OO#OOO#\\'+\
-        '#O#OO#O#\\'+\
-        '#OOO#OO#\\'+\
-        "########"
+    '########\\' +\
+    '#OO##OO#\\' +\
+    '#OO#OOO#\\' +\
+    '##OOO###\\' +\
+    '#OO#OOO#\\' +\
+    '#O#OO#O#\\' +\
+    '#OOO#OO#\\' +\
+    "########"
 
 MEDIUM_MAZE_EVAL = \
-        '########\\'+\
-        '#OOOOOO#\\'+\
-        '#O#O##O#\\'+\
-        '#OOOO#O#\\'+\
-        '###OO###\\'+\
-        '#OOOOOO#\\'+\
-        '#OO##OO#\\'+\
-        "########"
+    '########\\' +\
+    '#OOOOOO#\\' +\
+    '#O#O##O#\\' +\
+    '#OOOO#O#\\' +\
+    '###OO###\\' +\
+    '#OOOOOO#\\' +\
+    '#OO##OO#\\' +\
+    "########"
 
 SMALL_MAZE = \
-        "######\\"+\
-        "#OOOO#\\"+\
-        "#O##O#\\"+\
-        "#OOOO#\\"+\
-        "######"
+    "######\\" +\
+    "#OOOO#\\" +\
+    "#O##O#\\" +\
+    "#OOOO#\\" +\
+    "######"
 
 U_MAZE = \
-        "#####\\"+\
-        "#OOO#\\"+\
-        "###O#\\"+\
-        "#OOO#\\"+\
-        "#####"
+    "#####\\" +\
+    "#OOO#\\" +\
+    "###O#\\" +\
+    "#OOO#\\" +\
+    "#####"
 
 U_MAZE_EVAL = \
-        "#####\\"+\
-        "#OOO#\\"+\
-        "#O###\\"+\
-        "#OOO#\\"+\
-        "#####"
+    "#####\\" +\
+    "#OOO#\\" +\
+    "#O###\\" +\
+    "#OOO#\\" +\
+    "#####"
 
 OPEN = \
-        "#######\\"+\
-        "#OOOOO#\\"+\
-        "#OOOOO#\\"+\
-        "#OOOOO#\\"+\
-        "#######"
+    "#######\\" +\
+    "#OOOOO#\\" +\
+    "#OOOOO#\\" +\
+    "#OOOOO#\\" +\
+    "#######"
 
 chosen_maze = U_MAZE
 
+
 def display_maze(maze):
-        maze_str = []
-        for row in maze:
-            str_row = ''.join(row)
-            print(str_row)
-            maze_str.append(str(str_row))
-        return '\\'.join(maze_str)
+    maze_str = []
+    for row in maze:
+        str_row = ''.join(row)
+        print(str_row)
+        maze_str.append(str(str_row))
+    return '\\'.join(maze_str)
 
 
-def break_some_walls(maze, width, height, factor = 0.8):
-	coords_mod = []
-     
-	for (i,j) in product(range(1,width-1), range(1,height-1)):          
+def break_some_walls(maze, width, height, factor=0.8):
+    coords_mod = []
 
-		if maze[i][j]=='#':
-			vertical_corridor = maze[i][j+1] == 'O' and maze[i][j-1] == 'O' and maze[i+1][j] == '#' and maze[i-1][j] == '#'
-			horizontal_corridor = maze[i][j+1] == '#' and maze[i][j-1] == '#' and maze[i+1][j] == 'O' and maze[i-1][j] == 'O'
-			random_dice = random.random() > factor
+    for (i, j) in product(range(1, width-1), range(1, height-1)):
 
-			if (vertical_corridor or horizontal_corridor) and random_dice:
-				coords_mod.append((i,j))
+        if maze[i][j] == '#':
+            vertical_corridor = maze[i][j+1] == 'O' and maze[i][j -
+                                                                1] == 'O' and maze[i+1][j] == '#' and maze[i-1][j] == '#'
+            horizontal_corridor = maze[i][j+1] == '#' and maze[i][j -
+                                                                  1] == '#' and maze[i+1][j] == 'O' and maze[i-1][j] == 'O'
+            random_dice = random.random() > factor
 
-	for (i,j) in coords_mod:
-		maze[i][j] = 'O'
-def generate_maze(width, height, seed = 4):
+            if (vertical_corridor or horizontal_corridor) and random_dice:
+                coords_mod.append((i, j))
+
+    for (i, j) in coords_mod:
+        maze[i][j] = 'O'
+
+
+def generate_maze(width, height, seed=4):
     width = width + 1
     height = height + 1
 
     random.seed(seed)
     maze = [['#' for _ in range(width)] for _ in range(height)]
-    
+
     stack = []
 
     directions = [(0, 2), (2, 0), (0, -2), (-2, 0)]
@@ -123,13 +128,13 @@ def generate_maze(width, height, seed = 4):
         random.shuffle(directions)
 
         has_neighbors = False
-        
+
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
             if 0 <= nx <= width-1 and 0 <= ny <= height-1 and maze[ny][nx] == '#':
 
                 maze[ny][nx] = 'O'
-                
+
                 if dx == 2:
                     maze[y][x+1] = 'O'
                 elif dx == -2:
@@ -138,24 +143,25 @@ def generate_maze(width, height, seed = 4):
                     maze[y+1][x] = 'O'
                 elif dy == -2:
                     maze[y-1][x] = 'O'
-                
+
                 stack.append((nx, ny))
                 has_neighbors = True
-        
+
         if not has_neighbors:
-             stack.pop()
-    
-    
+            stack.pop()
+
     break_some_walls(maze, width, height)
-    
+
     maze = maze[:width][:height]
 
     return display_maze(maze[:width][:height])
 
+
 def draw_and_save_maze(maze_string, filename):
     rows = maze_string.split('\\')
-    maze_array = np.array([[0 if cell == 'O' else 1 for cell in row] for row in rows])
-    
+    maze_array = np.array(
+        [[0 if cell == 'O' else 1 for cell in row] for row in rows])
+
     plt.imshow(maze_array, cmap='gray_r', interpolation='nearest')
     plt.axis('off')
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)
@@ -164,9 +170,9 @@ def draw_and_save_maze(maze_string, filename):
 
 if __name__ == "__main__":
 
-	width = 20
-	height = 20
+    width = 20
+    height = 20
 
-	for i in range(50):
-		maze_str = generate_maze(width, height, seed=i)
-		draw_and_save_maze(maze_str, f"maze_{i+1}.png")
+    for i in range(50):
+        maze_str = generate_maze(width, height, seed=i)
+        draw_and_save_maze(maze_str, f"maze_{i+1}.png")
