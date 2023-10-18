@@ -6,8 +6,7 @@ import h5py
 import argparse
 from sklearn import preprocessing
 
-from type_of_mazes import chosen_maze
-
+from type_of_mazes import generate_maze
 
 
 def reset_data():
@@ -20,6 +19,7 @@ def reset_data():
             'infos/qvel': [],
             }
 
+
 def append_data(data, s, a, tgt, done, env_data):
     data['observations'].append(s)
     data['actions'].append(a)
@@ -28,6 +28,7 @@ def append_data(data, s, a, tgt, done, env_data):
     data['infos/goal'].append(tgt)
     data['infos/qpos'].append(env_data.qpos.ravel().copy())
     data['infos/qvel'].append(env_data.qvel.ravel().copy())
+
 
 def npify(data):
     for k in data:
@@ -39,16 +40,23 @@ def npify(data):
         data[k] = np.array(data[k], dtype=dtype)
 
 
-def main():
+def maze_generator(maze_seed):
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--render', action='store_true', help='Render trajectories')
+    parser.add_argument('--render', action='store_true',
+                        help='Render trajectories')
     parser.add_argument('--noisy', action='store_true', help='Noisy actions')
-    parser.add_argument('--env_name', type=str, default='maze2d-umaze-v1', help='Maze type')
-    parser.add_argument('--num_samples', type=int, default=int(1e6), help='Num samples to collect')
+    parser.add_argument('--env_name', type=str,
+                        default='maze2d-umaze-v1', help='Maze type')
+    parser.add_argument('--num_samples', type=int,
+                        default=int(1e4), help='Num samples to collect')
+    parser.add_argument('--dim', type=int, default=19,
+                        help='dimensions of the maze')
+
     args = parser.parse_args()
 
+    maze_spec = generate_maze(args.dim, args.dim, maze_seed)
     env = gym.make(args.env_name)
-    maze_spec = chosen_maze
     max_episode_steps = env._max_episode_steps
 
     controller = waypoint_controller.WaypointController(maze_spec)
@@ -61,7 +69,10 @@ def main():
 
     data = reset_data()
     ts = 0
-    for _ in range(args.num_samples):
+    for time in range(args.num_samples):
+
+        print(time)
+
         position = s[0:2]
         velocity = s[2:4]
         act, done = controller.get_action(position, velocity, env._target)
@@ -91,23 +102,31 @@ def main():
 
     le = preprocessing.LabelEncoder()
     maze_splitted_char = list(maze_spec)
-    
+
     encoded_info = le.fit_transform(maze_splitted_char)
 
-    type_of_maze_data = np.array(encoded_info)[None,...]
+    type_of_maze_data = np.array(encoded_info)[None, ...]
 
-    type_of_maze_data_expanded = np.repeat(type_of_maze_data, len(data['observations']), axis=0)
+    type_of_maze_data_expanded = np.repeat(
+        type_of_maze_data, len(data['observations']), axis=0)
     data['environment_attributes'] = type_of_maze_data_expanded
 
-    
     if args.noisy:
-        fname = '%s-noisy.hdf5' % args.env_name
+        fname = '%s-noisy.hdf5' % args.env_name + str(maze_seed).zfill(6)
     else:
-        fname = '%s.hdf5' % args.env_name
+        fname = '%s.hdf5' % args.env_name + str(maze_seed).zfill(6)
     dataset = h5py.File(fname, 'w')
     npify(data)
     for k in data:
         dataset.create_dataset(k, data=data[k], compression='gzip')
+
+
+def main():
+
+    for i in range(50):
+        print(i)
+        maze_generator(i)
+
 
 
 if __name__ == "__main__":

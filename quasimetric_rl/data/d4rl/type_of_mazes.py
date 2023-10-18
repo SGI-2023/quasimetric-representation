@@ -83,7 +83,6 @@ def display_maze(maze):
     maze_str = []
     for row in maze:
         str_row = ''.join(row)
-        print(str_row)
         maze_str.append(str(str_row))
     return '\\'.join(maze_str)
 
@@ -107,9 +106,29 @@ def break_some_walls(maze, width, height, factor=0.8):
         maze[i][j] = 'O'
 
 
+def append_wall(matrix):
+    # Append a row of zeros
+
+    matrix.reverse()
+
+    for row in matrix:
+        row.reverse()
+
+    # Create a row of zeros with the same number of columns as the original matrix
+    row_of_zeros = ['#'] * len(matrix[0])
+    matrix.append(row_of_zeros)
+
+    # Append a column of zeros
+    for row in matrix:
+        row.append('#')  # Add a zero to the end of each row
+
+    return matrix
+
+
 def generate_maze(width, height, seed=4):
-    width = width + 1
-    height = height + 1
+
+    width = width - 1
+    height = height - 1
 
     random.seed(seed)
     maze = [['#' for _ in range(width)] for _ in range(height)]
@@ -152,9 +171,9 @@ def generate_maze(width, height, seed=4):
 
     break_some_walls(maze, width, height)
 
-    maze = maze[:width][:height]
+    append_wall(maze)
 
-    return display_maze(maze[:width][:height])
+    return display_maze(maze)
 
 
 def draw_and_save_maze(maze_string, filename):
@@ -168,11 +187,6 @@ def draw_and_save_maze(maze_string, filename):
     plt.close()
 
 
-if __name__ == "__main__":
-
-    width = 20
-    height = 20
-
-    for i in range(50):
-        maze_str = generate_maze(width, height, seed=i)
-        draw_and_save_maze(maze_str, f"maze_{i+1}.png")
+for i in range(50):
+    maze_string = generate_maze(19, 19, i)
+    draw_and_save_maze(maze_string, 'maze'+str(i)+'.png')
