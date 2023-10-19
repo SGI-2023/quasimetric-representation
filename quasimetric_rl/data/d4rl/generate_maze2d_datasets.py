@@ -119,15 +119,3 @@ def maze_generator(maze_seed):
     npify(data)
     for k in data:
         dataset.create_dataset(k, data=data[k], compression='gzip')
-
-
-def main():
-
-    for i in range(50):
-        print(i)
-        maze_generator(i)
-
-
-
-if __name__ == "__main__":
-    main()

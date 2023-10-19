@@ -76,8 +76,6 @@ OPEN = \
     "#OOOOO#\\" +\
     "#######"
 
-chosen_maze = U_MAZE
-
 
 def display_maze(maze):
     maze_str = []
@@ -187,6 +185,5 @@ def draw_and_save_maze(maze_string, filename):
     plt.close()
 
 
-for i in range(50):
-    maze_string = generate_maze(19, 19, i)
-    draw_and_save_maze(maze_string, 'maze'+str(i)+'.png')
+seed = 0
+chosen_maze = generate_maze(19, 19, seed)
