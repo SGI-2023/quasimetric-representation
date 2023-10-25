@@ -43,24 +43,27 @@ def npify(data):
 def maze_generator(maze_seed):
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--render', action='store_true',
+    parser.add_argument('--render', action='store_false',
                         help='Render trajectories')
-    parser.add_argument('--noisy', action='store_true', help='Noisy actions')
+    parser.add_argument('--noisy', action='store_false', help='Noisy actions')
     parser.add_argument('--env_name', type=str,
-                        default='maze2d-umaze-v1', help='Maze type')
+                        default='maze2d-umaze-v0', help='Maze type')
     parser.add_argument('--num_samples', type=int,
                         default=int(1e4), help='Num samples to collect')
     parser.add_argument('--dim', type=int, default=19,
                         help='dimensions of the maze')
 
+    parser.add_argument('--max_episode_steps', type=int, default=5000,
+                        help='dimensions of the maze')
+
     args = parser.parse_args()
 
     maze_spec = generate_maze(args.dim, args.dim, maze_seed)
-    env = gym.make(args.env_name)
-    max_episode_steps = env._max_episode_steps
 
     controller = waypoint_controller.WaypointController(maze_spec)
-    env = maze_model.MazeEnv(maze_spec)
+    env = gym.make(args.env_name)
+
+    env = maze_model.MazeEnv(maze_spec=maze_spec)
 
     env.set_target()
     s = env.reset()
@@ -80,7 +83,7 @@ def maze_generator(maze_seed):
             act = act + np.random.randn(*act.shape)*0.5
 
         act = np.clip(act, -1.0, 1.0)
-        if ts >= max_episode_steps:
+        if ts >= args.max_episode_steps:
             done = True
         append_data(data, s, act, env._target, done, env.sim.data)
 
@@ -119,3 +122,6 @@ def maze_generator(maze_seed):
     npify(data)
     for k in data:
         dataset.create_dataset(k, data=data[k], compression='gzip')
+
+
+maze_generator(0)
