@@ -43,13 +43,13 @@ def npify(data):
 def maze_generator(maze_seed):
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--render', action='store_true',
+    parser.add_argument('--render', action='store_false',
                         help='Render trajectories')
     parser.add_argument('--noisy', action='store_true', help='Noisy actions')
     parser.add_argument('--env_name', type=str,
                         default='maze2d-custom-v0', help='Maze type')
     parser.add_argument('--num_samples', type=int,
-                        default=int(1e6), help='Num samples to collect')
+                        default=int(1e4), help='Num samples to collect')
     parser.add_argument('--dim', type=int, default=19,
                         help='dimensions of the maze')
 
