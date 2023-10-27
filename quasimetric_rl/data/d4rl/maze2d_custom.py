@@ -44,7 +44,7 @@ def load_episodes_maze2d_custom():
             pre_process_maze2d_fix_custom(
                 offline_maze,
                 offline_maze.get_dataset(
-                    h5path='quasimetric_rl/data/d4rl/maze2d-umaze-v1.hdf5' +  str(seed).zfill(6)),
+                    h5path='dataset_resources/paths_mazes/' +  f'maze2d-custom-v0_{str(seed).zfill(3)}.hdf5')
             ),
         ),
     )

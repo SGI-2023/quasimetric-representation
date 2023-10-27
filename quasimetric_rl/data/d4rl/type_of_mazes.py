@@ -123,7 +123,7 @@ def append_wall(matrix):
     return matrix
 
 
-def generate_maze(width, height, seed=4):
+def generate_maze(width=19, height=19, seed=4):
 
     width = width - 1
     height = height - 1
@@ -186,4 +186,4 @@ def draw_and_save_maze(maze_string, filename):
 
 
 seed = 0
-chosen_maze = generate_maze(19, 19, seed)
+chosen_maze = generate_maze(15, 15, seed)
