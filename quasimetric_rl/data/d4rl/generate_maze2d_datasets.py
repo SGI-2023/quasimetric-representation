@@ -43,25 +43,27 @@ def npify(data):
 def maze_generator(maze_seed):
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--render', action='store_false',
+    parser.add_argument('--render', action='store_true',
                         help='Render trajectories')
-    parser.add_argument('--noisy', action='store_false', help='Noisy actions')
+    parser.add_argument('--noisy', action='store_true', help='Noisy actions')
     parser.add_argument('--env_name', type=str,
-                        default='maze2d-umaze-v0', help='Maze type')
+                        default='maze2d-custom-v0', help='Maze type')
     parser.add_argument('--num_samples', type=int,
-                        default=int(1e4), help='Num samples to collect')
+                        default=int(1e6), help='Num samples to collect')
     parser.add_argument('--dim', type=int, default=19,
                         help='dimensions of the maze')
 
     parser.add_argument('--max_episode_steps', type=int, default=5000,
                         help='dimensions of the maze')
 
+    parser.add_argument('--dataset_folder', type=str,
+                        default='dataset_resources/paths_mazes/')
+
     args = parser.parse_args()
 
     maze_spec = generate_maze(args.dim, args.dim, maze_seed)
 
     controller = waypoint_controller.WaypointController(maze_spec)
-    env = gym.make(args.env_name)
 
     env = maze_model.MazeEnv(maze_spec=maze_spec)
 
@@ -114,14 +116,15 @@ def maze_generator(maze_seed):
         type_of_maze_data, len(data['observations']), axis=0)
     data['environment_attributes'] = type_of_maze_data_expanded
 
-    if args.noisy:
-        fname = '%s-noisy.hdf5' % args.env_name + str(maze_seed).zfill(6)
-    else:
-        fname = '%s.hdf5' % args.env_name + str(maze_seed).zfill(6)
+    fname = args.dataset_folder + f'{args.env_name}_{str(maze_seed).zfill(3)}.hdf5'
+
     dataset = h5py.File(fname, 'w')
     npify(data)
     for k in data:
         dataset.create_dataset(k, data=data[k], compression='gzip')
 
 
-maze_generator(0)
+if __name__ == '__main__':
+
+    for i in range(50):
+        maze_generator(i)
