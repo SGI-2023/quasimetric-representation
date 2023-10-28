@@ -24,6 +24,7 @@ from quasimetric_rl import utils, pdb_if_DEBUG, FLAGS
 from quasimetric_rl.utils.steps_counter import StepsCounter
 from quasimetric_rl.modules import InfoT
 from quasimetric_rl.base_conf import BaseConf
+from quasimetric_rl.data.d4rl.maze2d_custom import update_env_seed
 
 from .trainer import Trainer
 
@@ -160,7 +161,8 @@ def train_iter(cfg: Conf):
     for epoch in range(num_total_epochs):
 
         for env_seed_i in range(5):
-            quasimetric_rl.data.d4rl.maze2d_custom.env_seed = env_seed_i
+            update_env_seed(env_seed_i)
+
             dataset_maze_i = cfg.env.make()
             trainer.update_dataloader(dataset_maze_i)
 

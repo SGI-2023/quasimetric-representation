@@ -16,7 +16,12 @@ from .type_of_mazes import generate_maze
 env_seed = 0
 
 
-def pre_process_maze2d_fix_custom(env: 'd4rl.pointmaze.MazeEnv', dataset: Mapping[str, np.ndarray],seed: int):
+def update_env_seed(new_seed):
+    global env_seed
+    env_seed = new_seed
+
+
+def pre_process_maze2d_fix_custom(env: 'd4rl.pointmaze.MazeEnv', dataset: Mapping[str, np.ndarray], seed: int):
     dataset_fix = preprocess_maze2d_fix(env, dataset)
     size_of_dataset = dataset_fix['actions'].shape[0]
 
