@@ -27,33 +27,36 @@ from quasimetric_rl.base_conf import BaseConf
 
 from .trainer import Trainer
 
+import quasimetric_rl
+
 
 @utils.singleton
 @attrs.define(kw_only=True)
 class Conf(BaseConf):
-    output_base_dir: str = attrs.field(default=os.path.join(os.path.dirname(__file__), 'results'))
+    output_base_dir: str = attrs.field(
+        default=os.path.join(os.path.dirname(__file__), 'results'))
 
     resume_if_possible: bool = False
 
     env: quasimetric_rl.data.Dataset.Conf = quasimetric_rl.data.Dataset.Conf()
 
-    batch_size: int = attrs.field(default=4096, validator=attrs.validators.gt(0))
+    batch_size: int = attrs.field(
+        default=4096, validator=attrs.validators.gt(0))
     num_workers: int = attrs.field(default=8, validator=attrs.validators.ge(0))
-    total_optim_steps: int = attrs.field(default=int(2e5), validator=attrs.validators.gt(0))
+    total_optim_steps: int = attrs.field(
+        default=int(2e5), validator=attrs.validators.gt(0))
 
     log_steps: int = attrs.field(default=250, validator=attrs.validators.gt(0))
-    save_steps: int = attrs.field(default=50000, validator=attrs.validators.gt(0))
-
+    save_steps: int = attrs.field(
+        default=50000, validator=attrs.validators.gt(0))
 
 
 cs = hydra.core.config_store.ConfigStore.instance()
 cs.store(name='config', node=Conf())
 
 
-@pdb_if_DEBUG
-@hydra.main(version_base=None, config_name="config")
-def train(dict_cfg: DictConfig):
-    cfg: Conf = Conf.from_DictConfig(dict_cfg)
+def train_iter(cfg: Conf):
+
     writer = cfg.setup_for_expriment()  # checking & setup logging
 
     dataset = cfg.env.make()
@@ -61,10 +64,12 @@ def train(dict_cfg: DictConfig):
     # trainer
     dataloader_kwargs = dict(shuffle=True, drop_last=True)
     if cfg.num_workers > 0:
-        torch.multiprocessing.set_forkserver_preload(["torch", "quasimetric_rl"])
+        torch.multiprocessing.set_forkserver_preload(
+            ["torch", "quasimetric_rl"])
         dataloader_kwargs.update(
             num_workers=cfg.num_workers,
-            multiprocessing_context=torch.multiprocessing.get_context('forkserver'),
+            multiprocessing_context=torch.multiprocessing.get_context(
+                'forkserver'),
             persistent_workers=True,
         )
 
@@ -103,16 +108,17 @@ def train(dict_cfg: DictConfig):
             **extra,
         )
         torch.save(state_dicts, fullpath)
-        relpath = os.path.join('.', os.path.relpath(fullpath, os.path.dirname(__file__)))
+        relpath = os.path.join('.', os.path.relpath(
+            fullpath, os.path.dirname(__file__)))
         logging.info(f"Checkpointed to {relpath}")
 
     def load(ckpt):
         state_dicts = torch.load(ckpt, map_location='cpu')
         trainer.agent.load_state_dict(state_dicts['agent'])
         trainer.losses.load_state_dict(state_dicts['losses'])
-        relpath = os.path.join('.', os.path.relpath(ckpt, os.path.dirname(__file__)))
+        relpath = os.path.join('.', os.path.relpath(
+            ckpt, os.path.dirname(__file__)))
         logging.info(f"Loaded from {relpath}")
-
 
     ckpts = {}  # (epoch, iter) -> path
     for ckpt in sorted(glob.glob(os.path.join(glob.escape(cfg.output_dir), 'checkpoint_*.pth'))):
@@ -122,24 +128,12 @@ def train(dict_cfg: DictConfig):
 
     if cfg.resume_if_possible and len(ckpts) > 0:
         start_epoch, start_it = max(ckpts.keys())
-        logging.info(f'Load from existing checkpoint: {ckpts[start_epoch, start_it]}')
+        logging.info(
+            f'Load from existing checkpoint: {ckpts[start_epoch, start_it]}')
         load(ckpts[start_epoch, start_it])
         logging.info(f'Fast forward to epoch={start_epoch} iter={start_it}')
     else:
         start_epoch, start_it = 0, 0
-
-
-    # step counter to keep track of when to save
-    step_counter = StepsCounter(
-        alert_intervals=dict(
-            log=cfg.log_steps,
-            save=cfg.save_steps,
-        ),
-    )
-    num_total_epochs = int(np.ceil(cfg.total_optim_steps / trainer.num_batches))
-
-    # Training loop
-    optim_steps = 0
 
     def log_tensorboard(optim_steps, info: InfoT, prefix: str):  # logging helper
         for k, v in info.items():
@@ -150,31 +144,51 @@ def train(dict_cfg: DictConfig):
                 v = v.mean().item()
             writer.add_scalar(f"{prefix}{k}", v, optim_steps)
 
+    # step counter to keep track of when to save
+    step_counter = StepsCounter(
+        alert_intervals=dict(
+            log=cfg.log_steps,
+            save=cfg.save_steps,
+        ),
+    )
+    num_total_epochs = int(
+        np.ceil(cfg.total_optim_steps / trainer.num_batches))
+
+    # Training loop
+    optim_steps = 0
     save(0, 0)
-    if start_epoch < num_total_epochs:
-        for epoch in range(num_total_epochs):
-            epoch_desc = f"Train epoch {epoch:05d}/{num_total_epochs:05d}"
+    for epoch in range(num_total_epochs):
+
+        for env_seed_i in range(5):
+            quasimetric_rl.data.d4rl.maze2d_custom.env_seed = env_seed_i
+            dataset_maze_i = cfg.env.make()
+            trainer.update_dataloader(dataset_maze_i)
+
+            epoch_desc = f"Train epoch env {epoch:05d}/{num_total_epochs:05d}/{env_seed_i:05d}"
             for it, (data, data_info) in enumerate(tqdm(trainer.iter_training_data(), total=trainer.num_batches, desc=epoch_desc)):
                 step_counter.update_then_record_alerts()
                 optim_steps += 1
 
-                if (epoch, it) <= (start_epoch, start_it):
-                    continue  # fast forward
-                else:
-                    iter_t0 = time.time()
-                    train_info = trainer.train_step(data)
-                    iter_time = time.time() - iter_t0
-
-                if step_counter.alerts.save:
-                    save(epoch, it)
+                iter_t0 = time.time()
+                train_info = trainer.train_step(data)
+                iter_time = time.time() - iter_t0
 
                 if step_counter.alerts.log:
                     log_tensorboard(optim_steps, data_info, 'data/')
                     log_tensorboard(optim_steps, train_info, 'train_')
-                    writer.add_scalar("train/iter_time", iter_time, optim_steps)
+                    writer.add_scalar("train/iter_time",
+                                      iter_time, optim_steps)
 
     save(num_total_epochs, 0, suffix='final')
     open(cfg.completion_file, 'a').close()
+
+
+@pdb_if_DEBUG
+@hydra.main(version_base=None, config_name="config")
+def train(dict_cfg: DictConfig):
+    cfg: Conf = Conf.from_DictConfig(dict_cfg)
+
+    train_iter(cfg)
 
 
 if __name__ == '__main__':

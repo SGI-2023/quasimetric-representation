@@ -47,6 +47,14 @@ class Trainer(object):
             **dataloader_kwargs,
         )
 
+        self.dataloader_kwargs = dataloader_kwargs
+
+    def update_dataloader(self,dataset):
+        self.dataloader = dataset.get_dataloader(
+            batch_size=self.batch_size,
+            **self.dataloader_kwargs,
+        )
+
     @property
     def num_batches(self):
         return len(self.dataloader)
