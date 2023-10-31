@@ -50,6 +50,8 @@ class Conf(BaseConf):
     log_steps: int = attrs.field(default=250, validator=attrs.validators.gt(0))
     save_steps: int = attrs.field(
         default=50000, validator=attrs.validators.gt(0))
+    
+    num_environments: int = attrs.field(default=5, validator=attrs.validators.gt(0))
 
 
 cs = hydra.core.config_store.ConfigStore.instance()
@@ -160,7 +162,7 @@ def train_iter(cfg: Conf):
     save(0, 0)
     for epoch in range(num_total_epochs):
 
-        for env_seed_i in range(5):
+        for env_seed_i in range(cfg.num_environments):
             update_env_seed(env_seed_i)
 
             dataset_maze_i = cfg.env.make()

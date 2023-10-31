@@ -26,8 +26,13 @@ args=(
     agent.actor.losses.min_dist.add_goal_as_future_state=False
     agent.actor.losses.behavior_cloning.weight=0.05
 
-    # Put test for the checkpoint
+    # Checkpoint
     resume_if_possible=true
+    env.name=maze2d-custom
+    agent.num_critics=1
+    seed=44411223
+    device.index=0
+    num_environments=50
 )
 
-exec python -m offline.main "${args[@]}" env.name='maze2d-custom'  total_optim_steps=10000 agent.num_critics=1 "${@}"
+exec python -m offline_many_envs.main "${args[@]}"  "${@}"

@@ -49,7 +49,7 @@ def maze_generator(maze_seed):
     parser.add_argument('--env_name', type=str,
                         default='maze2d-custom-v0', help='Maze type')
     parser.add_argument('--num_samples', type=int,
-                        default=int(1e4), help='Num samples to collect')
+                        default=int(1e5), help='Num samples to collect')
     parser.add_argument('--dim', type=int, default=15,
                         help='dimensions of the maze')
 
