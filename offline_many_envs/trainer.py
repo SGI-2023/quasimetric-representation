@@ -9,7 +9,7 @@ import torch.utils.data
 
 from quasimetric_rl.modules import QRLConf, QRLAgent, QRLLosses, InfoT
 from quasimetric_rl.data import BatchData, Dataset
-
+from quasimetric_rl.data.d4rl.maze2d_custom import update_env_seed
 
 
 class Trainer(object):
@@ -39,8 +39,10 @@ class Trainer(object):
         self.agent.to(device)
         self.losses.to(device)
 
-        logging.info('Agent:\n\t' + str(self.agent).replace('\n', '\n\t') + '\n\n')
-        logging.info('Losses:\n\t' + str(self.losses).replace('\n', '\n\t') + '\n\n')
+        logging.info('Agent:\n\t' +
+                     str(self.agent).replace('\n', '\n\t') + '\n\n')
+        logging.info('Losses:\n\t' +
+                     str(self.losses).replace('\n', '\n\t') + '\n\n')
 
         self.dataloader = dataset.get_dataloader(
             batch_size=batch_size,
@@ -49,8 +51,21 @@ class Trainer(object):
 
         self.dataloader_kwargs = dataloader_kwargs
 
-    def update_dataloader(self,dataset):
-        self.dataloader = dataset.get_dataloader(
+        self.dataset_list = [self.dataset]
+
+    def update_dataloader(self, cfg_env, seed_i):
+
+        if seed_i >= len(self.dataset_list):
+
+            update_env_seed(seed_i)
+            self.dataset = cfg_env.make()
+
+            self.dataset_list.append(self.dataset)
+
+        else:
+            self.dataset = self.dataset_list[seed_i]
+
+        self.dataloader = self.dataset.get_dataloader(
             batch_size=self.batch_size,
             **self.dataloader_kwargs,
         )

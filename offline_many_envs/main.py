@@ -24,7 +24,6 @@ from quasimetric_rl import utils, pdb_if_DEBUG, FLAGS
 from quasimetric_rl.utils.steps_counter import StepsCounter
 from quasimetric_rl.modules import InfoT
 from quasimetric_rl.base_conf import BaseConf
-from quasimetric_rl.data.d4rl.maze2d_custom import update_env_seed
 
 from .trainer import Trainer
 
@@ -50,8 +49,9 @@ class Conf(BaseConf):
     log_steps: int = attrs.field(default=250, validator=attrs.validators.gt(0))
     save_steps: int = attrs.field(
         default=50000, validator=attrs.validators.gt(0))
-    
-    num_environments: int = attrs.field(default=5, validator=attrs.validators.gt(0))
+
+    num_environments: int = attrs.field(
+        default=5, validator=attrs.validators.gt(0))
 
 
 cs = hydra.core.config_store.ConfigStore.instance()
@@ -163,10 +163,8 @@ def train_iter(cfg: Conf):
     for epoch in range(num_total_epochs):
 
         for env_seed_i in range(cfg.num_environments):
-            update_env_seed(env_seed_i)
 
-            dataset_maze_i = cfg.env.make()
-            trainer.update_dataloader(dataset_maze_i)
+            trainer.update_dataloader(cfg.env, env_seed_i)
 
             epoch_desc = f"Train epoch env {epoch:05d}/{num_total_epochs:05d}/{env_seed_i:05d}"
             for it, (data, data_info) in enumerate(tqdm(trainer.iter_training_data(), total=trainer.num_batches, desc=epoch_desc)):
