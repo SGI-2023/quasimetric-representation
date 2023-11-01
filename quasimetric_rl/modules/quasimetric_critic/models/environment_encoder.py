@@ -30,7 +30,7 @@ class EnvironmentEncoder(nn.Module):
         # config / argparse uses this to specify behavior
 
         arch: Tuple[int, ...] = (512, 512)
-        latent_size: int = 4
+        latent_size: int = 15
         input_shape: int = len(chosen_maze)
 
         def make(self) -> 'EnvironmentEncoder':
