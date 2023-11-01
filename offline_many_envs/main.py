@@ -45,7 +45,7 @@ class Conf(BaseConf):
         default=4096, validator=attrs.validators.gt(0))
     num_workers: int = attrs.field(default=8, validator=attrs.validators.ge(0))
     total_optim_steps: int = attrs.field(
-        default=int(2e5), validator=attrs.validators.gt(0))
+        default=int(2e6), validator=attrs.validators.gt(0))
 
     log_steps: int = attrs.field(default=250, validator=attrs.validators.gt(0))
     save_steps: int = attrs.field(
