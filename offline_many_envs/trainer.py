@@ -10,6 +10,8 @@ import torch.utils.data
 from quasimetric_rl.modules import QRLConf, QRLAgent, QRLLosses, InfoT
 from quasimetric_rl.data import BatchData, Dataset
 from quasimetric_rl.data.d4rl.maze2d_custom import update_env_seed
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 
 class Trainer(object):

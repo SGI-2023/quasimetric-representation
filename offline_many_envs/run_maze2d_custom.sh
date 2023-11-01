@@ -5,7 +5,7 @@
 
 args=(
     env.kind=d4rl
-    num_workers=12
+    num_workers=0
     # encoder
     agent.quasimetric_critic.model.encoder.arch="[1024,1024,1024]"
     # quasimetric model
