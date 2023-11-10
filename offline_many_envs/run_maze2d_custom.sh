@@ -33,7 +33,7 @@ args=(
     seed=44411223
     device.index=0
     num_environments=50
-    total_optim_steps=3500
+    total_optim_steps=35000
     save_steps=1000
     
 )
