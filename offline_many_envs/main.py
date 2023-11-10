@@ -175,6 +175,9 @@ def train_iter(cfg: Conf):
                 train_info = trainer.train_step(data)
                 iter_time = time.time() - iter_t0
 
+                if step_counter.alerts.save:
+                    save(epoch, it)
+
                 if step_counter.alerts.log:
                     log_tensorboard(optim_steps, data_info, 'data/')
                     log_tensorboard(optim_steps, train_info, 'train_')
