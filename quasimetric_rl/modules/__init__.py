@@ -36,17 +36,10 @@ class QRLLosses(Module):
         critic_batch_infos = []
         loss_results: Dict[str, LossResult] = {}
 
-
         for idx, (critic, critic_loss) in enumerate(zip(agent.critics, self.critic_losses)):
 
-
-            z_env = critic.encoder_environment(data.environment_attributes)
-            observation_concatenate = torch.cat([data.observations, z_env], dim=-1)
-            next_observation_concatenate = torch.cat([data.next_observations, z_env], dim=-1)
-
-            input_data_encoder = torch.stack([observation_concatenate, next_observation_concatenate], dim=0)
-            # Concatenate it with z_env to get a more accurate reprensentation
-            zx, zy = critic.encoder(input_data_encoder).unbind(0)
+            zx, zy = critic.get_encoded_attributes(
+                data.observations, data.next_observations, data.environment_attributes)
 
             critic_batch_info = quasimetric_critic.CriticBatchInfo(
                 critic=critic,
@@ -54,10 +47,12 @@ class QRLLosses(Module):
                 zy=zy,
             )
             critic_batch_infos.append(critic_batch_info)
-            loss_results[f"critic_{idx:02d}"] = critic_loss(data, critic_batch_info, optimize=optimize)
+            loss_results[f"critic_{idx:02d}"] = critic_loss(
+                data, critic_batch_info, optimize=optimize)
 
         if self.actor_loss is not None:
-            loss_results['actor'] = self.actor_loss(agent.actor, critic_batch_infos, data, optimize=optimize)
+            loss_results['actor'] = self.actor_loss(
+                agent.actor, critic_batch_infos, data, optimize=optimize)
 
         return LossResult.combine(loss_results)
 
@@ -90,15 +85,23 @@ class QRLLosses(Module):
         super().load_state_dict(state_dict['module'])
         optim_scheds = state_dict['optim_scheds']
         if self.actor_loss is not None:
-            self.actor_loss.actor_optim.load_state_dict(optim_scheds['actor']['actor_optim'])
-            self.actor_loss.actor_sched.load_state_dict(optim_scheds['actor']['actor_sched'])
-            self.actor_loss.entropy_weight_optim.load_state_dict(optim_scheds['actor']['entropy_weight_optim'])
-            self.actor_loss.entropy_weight_sched.load_state_dict(optim_scheds['actor']['entropy_weight_sched']),
+            self.actor_loss.actor_optim.load_state_dict(
+                optim_scheds['actor']['actor_optim'])
+            self.actor_loss.actor_sched.load_state_dict(
+                optim_scheds['actor']['actor_sched'])
+            self.actor_loss.entropy_weight_optim.load_state_dict(
+                optim_scheds['actor']['entropy_weight_optim'])
+            self.actor_loss.entropy_weight_sched.load_state_dict(
+                optim_scheds['actor']['entropy_weight_sched']),
         for idx, critic_loss in enumerate(self.critic_losses):
-            critic_loss.critic_optim.load_state_dict(optim_scheds[f"critic_{idx:02d}"]['critic_optim'])
-            critic_loss.critic_sched.load_state_dict(optim_scheds[f"critic_{idx:02d}"]['critic_sched'])
-            critic_loss.lagrange_mult_optim.load_state_dict(optim_scheds[f"critic_{idx:02d}"]['lagrange_mult_optim'])
-            critic_loss.lagrange_mult_sched.load_state_dict(optim_scheds[f"critic_{idx:02d}"]['lagrange_mult_sched'])
+            critic_loss.critic_optim.load_state_dict(
+                optim_scheds[f"critic_{idx:02d}"]['critic_optim'])
+            critic_loss.critic_sched.load_state_dict(
+                optim_scheds[f"critic_{idx:02d}"]['critic_sched'])
+            critic_loss.lagrange_mult_optim.load_state_dict(
+                optim_scheds[f"critic_{idx:02d}"]['lagrange_mult_optim'])
+            critic_loss.lagrange_mult_sched.load_state_dict(
+                optim_scheds[f"critic_{idx:02d}"]['lagrange_mult_sched'])
 
 
 @attrs.define(kw_only=True)
@@ -111,10 +114,12 @@ class QRLConf:
         if self.actor is None:
             actor = actor_losses = None
         else:
-            actor, actor_losses = self.actor.make(env_spec=env_spec, total_optim_steps=total_optim_steps)
+            actor, actor_losses = self.actor.make(
+                env_spec=env_spec, total_optim_steps=total_optim_steps)
         critics, critic_losses = zip(*[
             self.quasimetric_critic.make(env_spec=env_spec, total_optim_steps=total_optim_steps) for _ in range(self.num_critics)
         ])
         return QRLAgent(actor=actor, critics=critics), QRLLosses(actor_loss=actor_losses, critic_losses=critic_losses)
+
 
 __all__ = ['QRLAgent', 'QRLLosses', 'QRLConf', 'InfoT']

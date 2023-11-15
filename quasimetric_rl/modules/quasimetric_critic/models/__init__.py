@@ -50,14 +50,12 @@ class QuasimetricCritic(Module):
 
     raw_lagrange_multiplier: nn.Parameter  # for the QRL constrained optimization
 
-
-    def __init__(self, encoder: Encoder, quasimetric_model: QuasimetricModel, latent_dynamics: LatentDynamics, encoder_environment:Encoder ):
+    def __init__(self, encoder: Encoder, quasimetric_model: QuasimetricModel, latent_dynamics: LatentDynamics, encoder_environment: Encoder):
         super().__init__()
         self.encoder = encoder
         self.quasimetric_model = quasimetric_model
         self.latent_dynamics = latent_dynamics
         self.encoder_environment = encoder_environment
-
 
     def forward(self, x: torch.Tensor, y: torch.Tensor, *, action: Optional[torch.Tensor] = None) -> torch.Tensor:
         # The basic interface is a V- or Q-function.
@@ -66,6 +64,19 @@ class QuasimetricCritic(Module):
         if action is not None:
             zx = self.latent_dynamics(zx, action)
         return self.quasimetric_model(zx, zy)
+
+    def get_encoded_attributes(self, observations: torch.Tensor, next_observations: torch.Tensor, environment_attributes: torch.Tensor) -> torch.Tensor:
+
+        z_env = self.encoder_environment(environment_attributes)
+
+        observation_concatenate = torch.cat([observations, z_env], dim=-1)
+        next_observation_concatenate = torch.cat(
+            [next_observations, z_env], dim=-1)
+
+        input_data_encoder = torch.stack(
+            [observation_concatenate, next_observation_concatenate], dim=0)
+        zx, zy = self.encoder(input_data_encoder).unbind(0)
+        return zx, zy
 
     # for type hints
     def __call__(self, x: torch.Tensor, y: torch.Tensor, *, action: Optional[torch.Tensor] = None) -> torch.Tensor:
