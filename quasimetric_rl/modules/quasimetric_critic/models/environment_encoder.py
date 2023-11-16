@@ -5,7 +5,7 @@ import attrs
 import torch
 import torch.nn as nn
 
-from ...utils import MLP, LatentTensor
+from ...utils import MLP, LatentTensor, CNN
 
 from ....data import EnvSpec
 from ....data.env_spec.input_encoding import InputEncoding
@@ -20,7 +20,7 @@ class EnvironmentEncoder(nn.Module):
            |
         (*, d)                             Encoded 1-D input
            |
-    [MLP specified by arch]                ENCODER
+    [CNN specified by arch]                ENCODER
            |
         (*, latent_size)                   1-D Latent
     """
@@ -29,9 +29,9 @@ class EnvironmentEncoder(nn.Module):
     class Conf:
         # config / argparse uses this to specify behavior
 
-        arch: Tuple[int, ...] = (512, 512)
+        arch: Tuple[int, ...] = (4, 8)
         latent_size: int = 15
-        input_shape: int = len(chosen_maze)
+        input_shape: int = (1)
 
         def make(self) -> 'EnvironmentEncoder':
             return EnvironmentEncoder(
@@ -49,12 +49,17 @@ class EnvironmentEncoder(nn.Module):
         super().__init__(**kwargs)
         
 
-        self.encoder = MLP(input_shape, latent_size, hidden_sizes=arch)
+        self.encoder = CNN(
+            input_channels=input_shape,
+            output_size=latent_size,
+            hidden_channels=arch,
+        )
         self.latent_size = latent_size
         self.input_shape = input_shape
 
     def forward(self, x: torch.Tensor) -> LatentTensor:
-        return self.encoder(x)
+        processed_input = x.unsqueeze(1)
+        return self.encoder(processed_input)
 
     # for type hint
     def __call__(self, x: torch.Tensor) -> LatentTensor:

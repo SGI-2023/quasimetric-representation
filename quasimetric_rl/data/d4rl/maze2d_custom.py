@@ -34,25 +34,6 @@ def update_env_seed(new_seed):
     env_seed = new_seed
 
 
-def pre_process_maze2d_fix_custom(env: 'd4rl.pointmaze.MazeEnv', dataset: Mapping[str, np.ndarray], maze_string: str):
-    dataset_fix = preprocess_maze2d_fix(env, dataset)
-    size_of_dataset = dataset_fix['actions'].shape[0]
-
-    le = preprocessing.LabelEncoder()
-
-    maze_splitted_char = list(maze_string)
-
-    encoded_info = le.fit_transform(maze_splitted_char)
-
-    type_of_maze_data = np.array(encoded_info)[None, ...]
-
-    type_of_maze_data_expanded = np.repeat(
-        type_of_maze_data, size_of_dataset, axis=0)
-    dataset_fix['environment_attributes'] = type_of_maze_data_expanded
-
-    return dataset_fix
-
-
 def load_episodes_maze2d_custom():
 
     chosen_maze = load_maze2d_custom_string()
@@ -64,11 +45,10 @@ def load_episodes_maze2d_custom():
     yield from convert_dict_to_EpisodeData_iter(
         sequence_dataset(
             offline_maze,
-            pre_process_maze2d_fix_custom(
+            preprocess_maze2d_fix(
                 env=offline_maze,
                 dataset=offline_maze.get_dataset(
-                    h5path='dataset_resources/paths_mazes/' + f'maze2d-custom-v0_{str(env_seed).zfill(3)}.hdf5'),
-                maze_string=chosen_maze
+                    h5path='dataset_resources/paths_mazes/' + f'maze2d-custom-v0_{str(env_seed).zfill(3)}.hdf5')
             ),
         ),
     )

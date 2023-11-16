@@ -59,6 +59,88 @@ class LossBase(nn.Module, metaclass=abc.ABCMeta):
         return super().__call__(*args, **kwargs)
 
 
+
+#------------------------------------------------------------------------------#
+#------------------------------------ CNN -------------------------------------#
+#------------------------------------------------------------------------------#
+
+class CNN(nn.Module):
+    input_channels: int
+    output_size: int
+    zero_init_last_conv: bool
+    module: nn.Sequential
+
+    def __init__(self,
+                 input_channels: int,
+                 output_size: int,
+                 *,
+                 input_shape: Collection[int] = (15,15),
+                 hidden_channels: Collection[int] = (4, 8),
+                 kernel_sizes: Collection[int] = [3,3],
+                 activation_fn: Type[nn.Module] = nn.ReLU,
+                 zero_init_last_conv: bool = False):
+        super().__init__()
+        self.input_channels = input_channels
+        self.output_size = output_size
+        self.zero_init_last_conv = zero_init_last_conv
+
+        channels_in = input_channels
+        modules: List[nn.Module] = []
+        for idx, channels_out in enumerate(hidden_channels):
+            kernel_size = kernel_sizes[idx]
+            modules.extend([
+                nn.Conv2d(channels_in, channels_out, kernel_size),
+                activation_fn(),
+                nn.MaxPool2d(2)  # Example pooling layer
+            ])
+            channels_in = channels_out
+        
+        # Flattening layer
+        modules.append(nn.Flatten())
+        # Final fully connected layer
+
+        self.module = nn.Sequential(*modules)
+
+        final_size_after_convolution = self._compute_flattened_size(input_channels, input_shape)
+
+        modules.append(nn.Linear(final_size_after_convolution, output_size))
+
+        # initialize with glorot_uniform
+        with torch.no_grad():
+            def init_(m: nn.Module):
+                if isinstance(m, (nn.Linear, nn.Conv2d)):
+                    nn.init.xavier_uniform_(m.weight)
+                    if m.bias is not None:
+                        nn.init.zeros_(m.bias)
+            for m in modules:
+                m.apply(init_)
+            if zero_init_last_conv:
+                last_conv = modules[-2] if isinstance(modules[-2], nn.Linear) else modules[-1]
+                last_conv.weight.zero_()
+                last_conv.bias.zero_()
+
+        self.module = torch.jit.script(nn.Sequential(*modules))
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        return self.module(input)
+    
+    def _compute_flattened_size(self,input_channels, input_shape ):
+
+        input_tensor = torch.zeros(1, input_channels, *input_shape)
+        with torch.no_grad():
+            output = self.module(input_tensor)
+        return int(np.prod(output.shape))
+
+    def __call__(self, input: torch.Tensor) -> torch.Tensor:
+        return super().__call__(input)
+
+    def extra_repr(self) -> str:
+        return "zero_init_last_conv={}".format(
+            self.zero_init_last_conv,
+        )
+
+
+
 #-----------------------------------------------------------------------------#
 #------------------------------------ MLP ------------------------------------#
 #-----------------------------------------------------------------------------#
