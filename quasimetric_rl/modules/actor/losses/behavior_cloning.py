@@ -33,7 +33,7 @@ class BCLoss(ActorLossBase):
     def forward(self, actor: Actor, critic_batch_infos: Collection[CriticBatchInfo], data: BatchData) -> LossResult:
         if self.weight == 0:
             return LossResult(loss=0, info={})
-        actor_distn = actor(data.observations, data.future_observations)
+        actor_distn = actor(data.observations, data.future_observations, data.environment_attributes)
         log_prob: torch.Tensor = actor_distn.log_prob(data.actions).mean()
         loss = -log_prob * self.weight
         return LossResult(loss=loss, info=dict(log_prob=log_prob))

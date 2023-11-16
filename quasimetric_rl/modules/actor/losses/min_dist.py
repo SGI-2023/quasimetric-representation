@@ -111,7 +111,7 @@ class MinDistLoss(ActorLossBase):
         with torch.no_grad():
             obs, goal, actor_obs_goal_critic_infos = self.gather_obs_goal_pairs(critic_batch_infos, data)
 
-        actor_distn = actor(obs, goal)
+        actor_distn = actor(obs, goal, data.environment_attributes)
         action = actor_distn.rsample()
 
         info: Dict[str, torch.Tensor] = {}

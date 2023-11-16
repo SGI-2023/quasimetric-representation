@@ -42,7 +42,7 @@ class EnvironmentEncoder(nn.Module):
 
     input_shape: torch.Size
     input_encoding: InputEncoding
-    encoder: MLP
+    encoder: CNN
     latent_size: int
 
     def __init__(self, *, arch: Tuple[int, ...], input_shape: int, latent_size: int, **kwargs):
