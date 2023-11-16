@@ -183,7 +183,3 @@ def draw_and_save_maze(maze_string, filename):
     plt.axis('off')
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)
     plt.close()
-
-
-seed = 0
-chosen_maze = generate_maze(15, 15, seed)
