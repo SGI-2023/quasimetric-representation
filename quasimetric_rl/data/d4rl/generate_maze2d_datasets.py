@@ -6,7 +6,7 @@ import h5py
 import argparse
 from sklearn import preprocessing
 
-from type_of_mazes import generate_maze
+from type_of_mazes import generate_maze, display_maze, convert_maze_array_to_float, convert_float_maze_to_string
 
 
 def reset_data():
@@ -49,7 +49,7 @@ def maze_generator(maze_seed):
     parser.add_argument('--env_name', type=str,
                         default='maze2d-custom-v0', help='Maze type')
     parser.add_argument('--num_samples', type=int,
-                        default=int(1e5), help='Num samples to collect')
+                        default=int(1e4), help='Num samples to collect')
     parser.add_argument('--dim', type=int, default=15,
                         help='dimensions of the maze')
 
@@ -63,9 +63,12 @@ def maze_generator(maze_seed):
 
     maze_spec = generate_maze(args.dim, args.dim, maze_seed)
 
-    controller = waypoint_controller.WaypointController(maze_spec)
+    maze_string = display_maze(maze_spec)
 
-    env = maze_model.MazeEnv(maze_spec=maze_spec)
+    controller = waypoint_controller.WaypointController(maze_string)
+
+
+    env = maze_model.MazeEnv(maze_spec=maze_string)
 
     env.set_target()
     s = env.reset()
@@ -105,12 +108,8 @@ def maze_generator(maze_seed):
         if args.render:
             env.render()
 
-    le = preprocessing.LabelEncoder()
-    maze_splitted_char = list(maze_spec)
 
-    encoded_info = le.fit_transform(maze_splitted_char)
-
-    type_of_maze_data = np.array(encoded_info)[None, ...]
+    type_of_maze_data = convert_maze_array_to_float(maze_spec)[None, ...]
 
     type_of_maze_data_expanded = np.repeat(
         type_of_maze_data, len(data['observations']), axis=0)
@@ -126,5 +125,5 @@ def maze_generator(maze_seed):
 
 if __name__ == '__main__':
 
-    for i in range(50):
+    for i in range(5):
         maze_generator(i)

@@ -171,7 +171,13 @@ def generate_maze(width=19, height=19, seed=4):
 
     append_wall(maze)
 
-    return display_maze(maze)
+    return maze
+
+def convert_maze_array_to_float(maze_array):
+    return np.array([[0 if cell == 'O' else 1 for cell in row] for row in maze_array]).astype(np.float32)
+
+def convert_float_maze_to_string(maze_array):
+    return '\\'.join([''.join(['O' if cell == 0. else '#' for cell in row]) for row in maze_array])
 
 
 def draw_and_save_maze(maze_string, filename):
@@ -183,3 +189,5 @@ def draw_and_save_maze(maze_string, filename):
     plt.axis('off')
     plt.savefig(filename, bbox_inches='tight', pad_inches=0)
     plt.close()
+
+chosen_maze = display_maze(generate_maze(15,15,0))
