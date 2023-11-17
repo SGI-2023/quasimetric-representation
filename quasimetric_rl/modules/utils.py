@@ -64,6 +64,8 @@ class LossBase(nn.Module, metaclass=abc.ABCMeta):
 #------------------------------------ CNN -------------------------------------#
 #------------------------------------------------------------------------------#
 
+
+
 class CNN(nn.Module):
     input_channels: int
     output_size: int
@@ -74,9 +76,9 @@ class CNN(nn.Module):
                  input_channels: int,
                  output_size: int,
                  *,
+                 hidden_channels: Collection[int], 
+                 kernel_sizes: Collection[int] = (5,5), 
                  input_shape: Collection[int] = (15,15),
-                 hidden_channels: Collection[int] = (4, 8),
-                 kernel_sizes: Collection[int] = [3,3],
                  activation_fn: Type[nn.Module] = nn.ReLU,
                  zero_init_last_conv: bool = False):
         super().__init__()
@@ -89,10 +91,10 @@ class CNN(nn.Module):
         for idx, channels_out in enumerate(hidden_channels):
             kernel_size = kernel_sizes[idx]
             modules.extend([
-                nn.Conv2d(channels_in, channels_out, kernel_size),
+                nn.Conv2d(channels_in, channels_out, kernel_size, stride=2),
                 activation_fn(),
-                nn.MaxPool2d(2)  # Example pooling layer
-            ])
+            ])                  #  #TODO: Play with the parameters (not the final layer be too big)
+                                # TODO: Put input fc layer 64~256
             channels_in = channels_out
         
         # Flattening layer

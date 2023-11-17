@@ -32,8 +32,9 @@ class Actor(nn.Module):
     
     env_encoder: CNN
     latent_size: int = 15
-    arch_env_encoder: Tuple[int, ...] = (4, 8)
-    input_channels: int = (1)
+    arch_env_encoder: Tuple[int, ...] = (32, 64)
+
+    input_channels: int = (2)
 
     def __init__(self, *, env_spec: EnvSpec, arch: Tuple[int, ...], **kwargs):
         super().__init__(**kwargs)
@@ -55,7 +56,7 @@ class Actor(nn.Module):
     def forward(self, o: torch.Tensor, g: torch.Tensor, environment_attributes: torch.Tensor) -> torch.distributions.Distribution:
         og = torch.stack([o, g], dim=-len(self.observation_shape) - 1)
 
-        environment_attributes = environment_attributes.unsqueeze(1)
+        environment_attributes = torch.nn.functional.one_hot(environment_attributes.long()).permute(0, 3, 1, 2).float()
 
         env_encoded_attr = self.env_encoder(environment_attributes)
 

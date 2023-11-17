@@ -29,9 +29,9 @@ class EnvironmentEncoder(nn.Module):
     class Conf:
         # config / argparse uses this to specify behavior
 
-        arch: Tuple[int, ...] = (4, 8)
+        arch: Tuple[int, ...] = (32, 64)
         latent_size: int = 15
-        input_shape: int = (1)
+        input_shape: int = (2)
 
         def make(self) -> 'EnvironmentEncoder':
             return EnvironmentEncoder(
@@ -52,14 +52,14 @@ class EnvironmentEncoder(nn.Module):
         self.encoder = CNN(
             input_channels=input_shape,
             output_size=latent_size,
-            hidden_channels=arch,
+            hidden_channels=arch
         )
         self.latent_size = latent_size
         self.input_shape = input_shape
 
     def forward(self, x: torch.Tensor) -> LatentTensor:
-        processed_input = x.unsqueeze(1)
-        return self.encoder(processed_input)
+        one_hot_input = torch.nn.functional.one_hot(x.long()).permute(0, 3, 1, 2).float()
+        return self.encoder(one_hot_input)
 
     # for type hint
     def __call__(self, x: torch.Tensor) -> LatentTensor:
