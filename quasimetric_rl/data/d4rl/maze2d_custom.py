@@ -15,14 +15,23 @@ from .type_of_mazes import generate_maze, convert_float_maze_to_string
 import h5py
 
 env_seed = 0
+list_strings = []
 
+#TODO:
+# Convert to one hot: torch.nn.functional.one_hot
 def load_maze2d_custom_string():
-    dataset_string = 'dataset_resources/paths_mazes/' + f'maze2d-custom-v0_{str(env_seed).zfill(3)}.hdf5'
+
+    if env_seed == len(list_strings):
+        dataset_string = 'dataset_resources/paths_mazes/' + f'maze2d-custom-v0_{str(env_seed).zfill(3)}.hdf5'
 
 
-    with h5py.File(dataset_string, 'r') as dataset_file:
-            choosen_maze_Layout = dataset_file['environment_attributes'][0]
+        with h5py.File(dataset_string, 'r') as dataset_file:
+                choosen_maze_Layout = dataset_file['environment_attributes'][0]
 
+        list_strings.append(choosen_maze_Layout)
+        
+    else:
+         choosen_maze_Layout = list_strings[env_seed]
     
     chosen_maze = convert_float_maze_to_string(choosen_maze_Layout)
 

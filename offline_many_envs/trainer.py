@@ -87,7 +87,8 @@ class Trainer(object):
         """
         data_t0 = time.time()
         data: BatchData
-        for data in self.dataloader:
+  
+        for data in self.dataloader: #TODO:Going one by one for each dataloader until run on all of then
             data = data.to(self.device)
             yield data, dict(data_time=time.time() - data_t0)
             data_t0 = time.time()

@@ -5,7 +5,7 @@
 
 args=(
     env.kind=d4rl
-    num_workers=0
+    num_workers=12
     # encoder
     agent.quasimetric_critic.model.encoder.arch="[1024,1024,1024]"
     # quasimetric model
@@ -32,10 +32,10 @@ args=(
     agent.num_critics=1
     seed=44411223
     device.index=0
-    num_environments=50
+    num_environments=5
     total_optim_steps=35000
-    save_steps=1000
-    
+    save_steps=100
+    # Add any additional parameters here
 )
 
 exec python -m offline_many_envs.main "${args[@]}"  "${@}"
