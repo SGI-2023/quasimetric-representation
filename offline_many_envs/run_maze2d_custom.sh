@@ -5,7 +5,7 @@
 
 args=(
     env.kind=d4rl
-    num_workers=1
+    num_workers=12
     # encoder
     agent.quasimetric_critic.model.encoder.arch="[1024,1024,1024]"
     # quasimetric model
@@ -33,7 +33,7 @@ args=(
     seed=44411223
     device.index=0
     num_environments=5
-    total_optim_steps=35000
+    total_optim_steps=350000
     save_steps=1000
     # Add any additional parameters here
 )

@@ -94,6 +94,8 @@ def train_iter(cfg: Conf):
         batch_size=cfg.batch_size,
         total_optim_steps=cfg.total_optim_steps,
         dataloader_kwargs=dataloader_kwargs,
+        num_envs=cfg.num_environments,
+        cfg_env=cfg.env,
     )
 
     # save, load, and resume
@@ -162,27 +164,24 @@ def train_iter(cfg: Conf):
     save(0, 0)
     for epoch in range(num_total_epochs):
 
-        for env_seed_i in range(cfg.num_environments):
+        epoch_desc = f"Train epoch {epoch:05d}/{num_total_epochs:05d}"
+        
+        for it, (data, data_info) in enumerate(tqdm(trainer.iter_training_data(), total=trainer.num_batches, desc=epoch_desc)):
 
-            trainer.update_dataloader(cfg.env, env_seed_i)
+            step_counter.update_then_record_alerts()
+            optim_steps += 1
+            iter_t0 = time.time()
+            train_info = trainer.train_step(data)
+            iter_time = time.time() - iter_t0
 
-            epoch_desc = f"Train epoch env {epoch:05d}/{num_total_epochs:05d}/{env_seed_i:05d}"
-            for it, (data, data_info) in enumerate(tqdm(trainer.iter_training_data(), total=trainer.num_batches, desc=epoch_desc)):
-                step_counter.update_then_record_alerts()
-                optim_steps += 1
+            if step_counter.alerts.save:
+                save(epoch, it)
 
-                iter_t0 = time.time()
-                train_info = trainer.train_step(data)
-                iter_time = time.time() - iter_t0
-
-                if step_counter.alerts.save:
-                    save(epoch, it)
-
-                if step_counter.alerts.log:
-                    log_tensorboard(optim_steps, data_info, 'data/')
-                    log_tensorboard(optim_steps, train_info, 'train_')
-                    writer.add_scalar("train/iter_time",
-                                      iter_time, optim_steps)
+            if step_counter.alerts.log:
+                log_tensorboard(optim_steps, data_info, 'data/')
+                log_tensorboard(optim_steps, train_info, 'train_')
+                writer.add_scalar("train/iter_time",
+                                  iter_time, optim_steps)
 
     save(num_total_epochs, 0, suffix='final')
     open(cfg.completion_file, 'a').close()

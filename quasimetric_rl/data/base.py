@@ -3,6 +3,7 @@ from typing import *
 
 import attrs
 
+
 import numpy as np
 import torch
 import torch.utils.data
@@ -172,6 +173,7 @@ def register_offline_env(kind: str, spec: str, *, load_episodes_fn, create_env_f
     CREATE_ENV_REGISTRY[(kind, spec)] = create_env_fn
 
 
+
 class Dataset:
     @attrs.define(kw_only=True)
     class Conf:
@@ -328,6 +330,98 @@ class Dataset:
             **kwargs,
         )
 
+class ConcatDataset(torch.utils.data.Dataset):
+    r"""Dataset as a concatenation of multiple datasets.
+
+    This class is useful to assemble different existing datasets.
+
+    Args:
+        datasets (sequence): List of datasets to be concatenated
+    """
+    datasets: List[torch.utils.data.Dataset]
+    cumulative_sizes: List[int]
+
+    @staticmethod
+    def cumsum(sequence:List[torch.utils.data.Dataset]):
+        r, s = [], 0
+        for e in sequence:
+            l = len(e)
+            r.append(l + s)
+            s += l
+        return r
+    
+    def map_indices_to_datasets_vectorized(self, cumulative_sizes_tensor:torch.Tensor, indices:torch.Tensor):
+        """
+        Map each index in 'indices' to its corresponding dataset using vectorized operations.
+
+        :param cumulative_sizes: List of cumulative sizes of the datasets.
+        :param indices: A PyTorch tensor of indices.
+        :return: A PyTorch tensor where each element is the dataset number for the corresponding index.
+        """
+        # Expand cumulative_sizes to match the shape of indices
+        cumulative_sizes_expanded = cumulative_sizes_tensor.unsqueeze(0).expand(indices.size(0), -1)
+
+        # Expand indices to enable vectorized comparison
+        indices_expanded = indices.unsqueeze(1).expand_as(cumulative_sizes_expanded)
+
+        # Perform vectorized comparison
+        dataset_indices = torch.sum(indices_expanded >= cumulative_sizes_expanded, dim=1)
+
+        return dataset_indices
+    
+    def separate_indices_by_dataset(self,cumulative_sizes:List[torch.Tensor], indices:List[torch.Tensor]):
+        """
+        Separate indices into a list of tensors, each containing indices for a specific dataset.
+
+        :param cumulative_sizes: List of cumulative sizes of the datasets.
+        :param indices: A PyTorch tensor of indices.
+        :return: A list of PyTorch tensors, each containing indices for a specific dataset.
+        """
+        dataset_indices = self.map_indices_to_datasets_vectorized(cumulative_sizes, indices)
+        num_datasets = len(cumulative_sizes)
+        separated_indices = []
+
+        for dataset_num in range(num_datasets):
+            # Create a mask for the current dataset
+            mask = dataset_indices == dataset_num
+
+            # Apply the mask to the indices tensor
+            dataset_specific_indices = indices[mask]
+
+            separated_indices.append(dataset_specific_indices)
+
+        return separated_indices
+
+    def __init__(self, datasets: Iterable[Dataset]) -> None:
+        super(ConcatDataset, self).__init__()
+        self.datasets = list(datasets)
+        self.cumulative_sizes = torch.as_tensor(self.cumsum(self.datasets))
+
+    def __len__(self):
+        return self.cumulative_sizes[-1]
+
+    def __getitem__(self, idx):
+
+        indices = torch.as_tensor(idx)
+        separated_indices = self.separate_indices_by_dataset(self.cumulative_sizes, indices)
+
+        batch_data_list = []
+        for index, indices_dataset in enumerate(separated_indices):
+
+            if index == 0:
+                real_indices_coords = indices_dataset
+            else:
+                real_indices_coords = indices_dataset - self.cumulative_sizes[index - 1]
+
+            batch_data_list.append(self.datasets[index][real_indices_coords])
+
+        return BatchData.cat(batch_data_list)
+        
+        
+
+    @property
+    def cummulative_sizes(self):
+        return self.cumulative_sizes
 
 def seed_worker(_):
     worker_seed = torch.utils.data.get_worker_info().seed % (2 ** 32)
