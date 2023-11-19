@@ -32,7 +32,7 @@ args=(
     agent.num_critics=1
     seed=44411223
     device.index=0
-    num_environments=5
+    num_environments=50
     total_optim_steps=350000
     save_steps=1000
     # Add any additional parameters here
