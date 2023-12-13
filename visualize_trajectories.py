@@ -22,11 +22,21 @@ import sys
 
 env_seed = 0
 
-def create_circle_in_image_given_array(image_array:np.array, circle_centers_array_float:np.array):
+def create_circle_in_image_given_array(image_array:np.array, circle_centers_array_float:np.array, distances_array:np.array):
 	circle_centers_array_float = circle_centers_array_float + 0.5
 	circle_centers_array_float = circle_centers_array_float.astype(int)
-	for point in circle_centers_array_float:
-		image_array[point[0], point[1], :] = (0,0,255)
+	
+	distances_array = distances_array/np.max(distances_array)
+
+	counter = 0
+
+	for point,distance in zip(circle_centers_array_float, distances_array):
+
+		image_array[point[0], point[1], :] = (0,0,255*distance)
+
+		counter = counter + 1
+
+	image_array[circle_centers_array_float[0,0], circle_centers_array_float[0,1], :] = (0,255,255*distance)
 
 if __name__ == "__main__":
 
@@ -40,24 +50,8 @@ if __name__ == "__main__":
 	offline_env = maze_model.MazeEnv(maze_spec=chosen_maze_string)
 	dataset_maze = offline_env.get_dataset(h5path=dataset_string)
 
-	particle_position_trajectory = dataset_maze['observations'][:500, :2]
+	number_evals = 50000
 
-	# Creating an empty RGB image
-	rgb_image_array = np.zeros((choosen_maze_Layout.shape[0], choosen_maze_Layout.shape[1], 3), dtype=np.uint8)
-
-	create_circle_in_image_given_array(rgb_image_array, particle_position_trajectory)
-
-	# Assigning the binary values to the red channel
-	rgb_image_array[:, :, 0] = choosen_maze_Layout * 255  # Multiply by 255 to get the full intensity of red
-
-	# Using matplotlib to save the RGB image
-	plt.imshow(rgb_image_array)
-	plt.axis('off')  # Turn off axis numbers and labels
-	plt.axis('off')  # Turn off axis numbers and labels
-
-	# Save the image
-	image_filename = 'binary_image.png'
-	plt.savefig(image_filename, bbox_inches='tight', pad_inches=0)
 
 	expr_checkpoint = f"objectives/iqe(dim=2048,components=64)_dyn=1_actor(goal=Rand,BC=0.05)_seed=20000000/checkpoint_04590_00049.pth"
 	
@@ -94,10 +88,34 @@ if __name__ == "__main__":
 	actions = torch.tensor([0, 1, 2, 3])
 	critic= agent.critics[0]
 
-	observations = torch.tensor(dataset_maze['observations'][:1,:])
-	observations_next = torch.tensor(dataset_maze['observations'][1:2,:])
-	environment_attributes = torch.tensor(dataset_maze['environment_attributes'][:1])
+	observations = torch.tensor(dataset_maze['observations'][:1,:]).repeat(number_evals,1)
+	observations_next = torch.tensor(dataset_maze['observations'][:number_evals,:])
+
+	environment_attributes = torch.tensor(dataset_maze['environment_attributes'][:number_evals])
 
 	with torch.no_grad():
 			zx, zy = critic.get_encoded_attributes(observations, observations_next, environment_attributes)
 			distances = critic.quasimetric_model(zx, zy)
+
+	particle_position_trajectory = observations_next[:, :2].numpy()
+
+	# Creating an empty RGB image
+	rgb_image_array = np.zeros((choosen_maze_Layout.shape[0], choosen_maze_Layout.shape[1], 3), dtype=np.uint8)
+
+	create_circle_in_image_given_array(rgb_image_array, particle_position_trajectory, distances.numpy())
+
+	# Assigning the binary values to the red channel
+	rgb_image_array[:, :, 0] = choosen_maze_Layout * 255  # Multiply by 255 to get the full intensity of red
+
+	# Using matplotlib to save the RGB image
+	plt.imshow(rgb_image_array)
+	plt.axis('off')  # Turn off axis numbers and labels
+	plt.axis('off')  # Turn off axis numbers and labels
+
+	# Save the image
+	image_filename = 'binary_image.png'
+	plt.savefig(image_filename, bbox_inches='tight', pad_inches=0)
+
+
+
+	print("finished")
