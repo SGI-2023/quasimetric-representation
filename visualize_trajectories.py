@@ -32,25 +32,25 @@ def create_circle_in_image_given_array(image_array:np.array, circle_centers_arra
 
 	for point,distance in zip(circle_centers_array_float, distances_array):
 
-		image_array[point[0], point[1], :] = (0,0,255*distance)
+		image_array[point[0], point[1], 2] = (255*distance)
 
 		counter = counter + 1
 
-	image_array[circle_centers_array_float[0,0], circle_centers_array_float[0,1], :] = (0,255,255*distance)
+	image_array[circle_centers_array_float[0,0], circle_centers_array_float[0,1], :] = (0,255,255*distances_array[0])
+
+
+def create_observations_from_maze_spec(maze_spec:np.array):
+	observations = []
+	for row in range(maze_spec.shape[0]):
+		for column in range(maze_spec.shape[1]):
+			if maze_spec[row, column] == 0:
+				observations.append([row-0.5, column-0.5, 0, 0])
+
+	observations = np.array(observations)
+	return observations
 
 if __name__ == "__main__":
 
-	dataset_string = 'dataset_resources/paths_mazes/' + f'maze2d-custom-v0_{str(env_seed).zfill(3)}.hdf5'
-
-	with h5py.File(dataset_string, 'r') as dataset_file:
-		dataset_obs = dataset_file["observations"]
-		choosen_maze_Layout = dataset_file['environment_attributes'][0]
-
-	chosen_maze_string = convert_float_maze_to_string(choosen_maze_Layout)
-	offline_env = maze_model.MazeEnv(maze_spec=chosen_maze_string)
-	dataset_maze = offline_env.get_dataset(h5path=dataset_string)
-
-	number_evals = 50000
 
 
 	expr_checkpoint = f"objectives/iqe(dim=2048,components=64)_dyn=1_actor(goal=Rand,BC=0.05)_seed=20000000/checkpoint_04590_00049.pth"
@@ -88,34 +88,58 @@ if __name__ == "__main__":
 	actions = torch.tensor([0, 1, 2, 3])
 	critic= agent.critics[0]
 
-	observations = torch.tensor(dataset_maze['observations'][:1,:]).repeat(number_evals,1)
-	observations_next = torch.tensor(dataset_maze['observations'][:number_evals,:])
 
-	environment_attributes = torch.tensor(dataset_maze['environment_attributes'][:number_evals])
+	for env_seed in range(50):
 
-	with torch.no_grad():
-			zx, zy = critic.get_encoded_attributes(observations, observations_next, environment_attributes)
-			distances = critic.quasimetric_model(zx, zy)
+		dataset_string = 'dataset_resources/paths_mazes/' + f'maze2d-custom-v0_{str(env_seed).zfill(3)}.hdf5'
 
-	particle_position_trajectory = observations_next[:, :2].numpy()
+		with h5py.File(dataset_string, 'r') as dataset_file:
+			dataset_obs = dataset_file["observations"]
+			choosen_maze_Layout = dataset_file['environment_attributes'][0]
 
-	# Creating an empty RGB image
-	rgb_image_array = np.zeros((choosen_maze_Layout.shape[0], choosen_maze_Layout.shape[1], 3), dtype=np.uint8)
+		chosen_maze_string = convert_float_maze_to_string(choosen_maze_Layout)
+		offline_env = maze_model.MazeEnv(maze_spec=chosen_maze_string)
+		dataset_maze = offline_env.get_dataset(h5path=dataset_string)
 
-	create_circle_in_image_given_array(rgb_image_array, particle_position_trajectory, distances.numpy())
+		number_evals = 50000
 
-	# Assigning the binary values to the red channel
-	rgb_image_array[:, :, 0] = choosen_maze_Layout * 255  # Multiply by 255 to get the full intensity of red
-
-	# Using matplotlib to save the RGB image
-	plt.imshow(rgb_image_array)
-	plt.axis('off')  # Turn off axis numbers and labels
-	plt.axis('off')  # Turn off axis numbers and labels
-
-	# Save the image
-	image_filename = 'binary_image.png'
-	plt.savefig(image_filename, bbox_inches='tight', pad_inches=0)
+		observations = create_observations_from_maze_spec(choosen_maze_Layout)
 
 
+		num_spaces = len(observations)
+		first_observation = observations[0,:]
+		observations_start =  np.tile(first_observation[np.newaxis, :], (num_spaces, 1))
+		observations_next = observations
 
-	print("finished")
+		observations_start = torch.tensor(observations_start, dtype=torch.float32)
+		observations_next = torch.tensor(observations_next, dtype=torch.float32)
+
+		environment_attributes = torch.tensor(dataset_maze['environment_attributes'][:1,:,:]).repeat(num_spaces,1,1)
+
+		with torch.no_grad():
+				zx, zy = critic.get_encoded_attributes(observations_start, observations_next, environment_attributes)
+				distances = critic.quasimetric_model(zx, zy)
+
+		particle_position_trajectory = observations_next[:, :2].numpy()
+
+		# Creating an empty RGB image
+		rgb_image_array = np.zeros((choosen_maze_Layout.shape[0], choosen_maze_Layout.shape[1], 3), dtype=np.uint8)
+
+		# Assigning the binary values to the red channel
+		rgb_image_array[:, :, 0] = choosen_maze_Layout * 255  # Multiply by 255 to get the full intensity of red
+
+		create_circle_in_image_given_array(rgb_image_array, particle_position_trajectory, distances.numpy())
+
+
+		# Using matplotlib to save the RGB image
+		plt.imshow(rgb_image_array)
+		plt.axis('off')  # Turn off axis numbers and labels
+		plt.axis('off')  # Turn off axis numbers and labels
+
+		# Save the image
+		image_filename = f'binary_image_env_seed_{env_seed}.png'
+		plt.savefig(image_filename, bbox_inches='tight', pad_inches=0)
+
+
+
+		print("finished")

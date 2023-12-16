@@ -12,6 +12,7 @@ __pycache__
 */**/**/**/*.pyc
 */**/**/**/**/*.pyc
 .mypy_cache
+objectives/
 
 # IPython notebook checkpoints
 .ipynb_checkpoints

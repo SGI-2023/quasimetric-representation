@@ -128,7 +128,6 @@ def generate_maze(width=19, height=19, seed=4):
     width = width - 1
     height = height - 1
 
-    random.seed(seed)
     maze = [['#' for _ in range(width)] for _ in range(height)]
 
     stack = []
