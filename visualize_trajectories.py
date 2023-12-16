@@ -18,7 +18,7 @@ from quasimetric_rl import utils
 
 import matplotlib.pyplot as plt
 from typing import cast
-import sys
+from collections import deque
 
 env_seed = 0
 
@@ -48,6 +48,58 @@ def create_observations_from_maze_spec(maze_spec:np.array):
 
 	observations = np.array(observations)
 	return observations
+
+def get_distances_from_quasimetrics(observations_start, observations_next, environment_attributes, critic):
+	with torch.no_grad():
+		zx, zy = critic.get_encoded_attributes(observations_start, observations_next, environment_attributes)
+		distances = critic.quasimetric_model(zx, zy)
+	return distances
+
+
+def min_distance(maze, start):
+    """
+    Calculate the minimum distance to travel from the start state to any other state in the maze.
+    
+    :param maze: 2D list representing the maze with 0s as passable and 1s as impassable.
+    :param start: Tuple (x, y) representing the starting coordinates.
+    :return: 2D list with the minimum distance from the start to each cell. -1 for impassable cells.
+    """
+    rows, cols = len(maze), len(maze[0])
+    distance = [[-1 for _ in range(cols)] for _ in range(rows)]  # Initialize distance array with -1
+
+    # Directions: up, down, left, right
+    directions = [(0, 1), (0, -1), (-1, 0), (1, 0)]
+
+    # BFS queue
+    queue = deque([start])
+    distance[start[0]][start[1]] = 0  # Distance to the start cell is 0
+
+    while queue:
+        x, y = queue.popleft()
+
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+
+            # Check if the new position is within the maze and not a wall
+            if 0 <= nx < rows and 0 <= ny < cols and maze[nx][ny] == 0 and distance[nx][ny] == -1:
+                distance[nx][ny] = distance[x][y] + 1
+                queue.append((nx, ny))
+
+    return distance
+
+def get_distances_ground_truth(observations_start, observations_next, environment_attributes):
+	start = observations_start[0, :2].to(int) + 1
+	next_obs = observations_next[:, :2].to(int) + 1
+
+	distance_matrix = min_distance(environment_attributes[0], start)
+	distance_matrix = torch.tensor(distance_matrix)
+
+	distances = []
+	for obs in next_obs:
+		distances.append(distance_matrix[obs[0], obs[1]])
+
+		
+	return torch.tensor(distances)
 
 if __name__ == "__main__":
 
@@ -91,7 +143,7 @@ if __name__ == "__main__":
 
 	for env_seed in range(50):
 
-		dataset_string = 'dataset_resources/paths_mazes/' + f'maze2d-custom-v0_{str(env_seed).zfill(3)}.hdf5'
+		dataset_string = 'dataset_resources/evaluation_mazes/paths_mazes/' + f'maze2d-custom-v0_{str(env_seed).zfill(3)}.hdf5'
 
 		with h5py.File(dataset_string, 'r') as dataset_file:
 			dataset_obs = dataset_file["observations"]
@@ -101,10 +153,7 @@ if __name__ == "__main__":
 		offline_env = maze_model.MazeEnv(maze_spec=chosen_maze_string)
 		dataset_maze = offline_env.get_dataset(h5path=dataset_string)
 
-		number_evals = 50000
-
 		observations = create_observations_from_maze_spec(choosen_maze_Layout)
-
 
 		num_spaces = len(observations)
 		first_observation = observations[0,:]
@@ -116,9 +165,7 @@ if __name__ == "__main__":
 
 		environment_attributes = torch.tensor(dataset_maze['environment_attributes'][:1,:,:]).repeat(num_spaces,1,1)
 
-		with torch.no_grad():
-				zx, zy = critic.get_encoded_attributes(observations_start, observations_next, environment_attributes)
-				distances = critic.quasimetric_model(zx, zy)
+		distances = get_distances_ground_truth(observations_start, observations_next, environment_attributes)
 
 		particle_position_trajectory = observations_next[:, :2].numpy()
 
@@ -129,7 +176,6 @@ if __name__ == "__main__":
 		rgb_image_array[:, :, 0] = choosen_maze_Layout * 255  # Multiply by 255 to get the full intensity of red
 
 		create_circle_in_image_given_array(rgb_image_array, particle_position_trajectory, distances.numpy())
-
 
 		# Using matplotlib to save the RGB image
 		plt.imshow(rgb_image_array)
